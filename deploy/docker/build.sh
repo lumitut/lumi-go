@@ -1,5 +1,5 @@
 #!/bin/bash
-# Docker build script for lumi-go service
+# Docker build script for lumi-go (Go Microservice Template)
 
 set -e
 
@@ -34,14 +34,14 @@ echo ""
 build_image() {
     local tag=$1
     local dockerfile=${2:-Dockerfile}
-    
+
     echo -e "${YELLOW}Building image: ${REGISTRY}/${SERVICE_NAME}:${tag}${NC}"
-    
+
     # Build arguments
     BUILD_ARGS="--build-arg VERSION=${VERSION}"
     BUILD_ARGS="${BUILD_ARGS} --build-arg BUILD_TIME=${BUILD_TIME}"
     BUILD_ARGS="${BUILD_ARGS} --build-arg GIT_COMMIT=${GIT_COMMIT}"
-    
+
     # Platform configuration
     if [ "${PLATFORMS}" != "linux/amd64" ]; then
         # Multi-platform build requires buildx
@@ -61,7 +61,7 @@ build_image() {
         BUILDER="build"
         PUSH_ARG=""
     fi
-    
+
     # Build command
     docker ${BUILDER} \
         ${PLATFORM_ARG} \
@@ -70,7 +70,7 @@ build_image() {
         -t ${REGISTRY}/${SERVICE_NAME}:${tag} \
         ${PUSH_ARG} \
         .
-    
+
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✓ Successfully built ${REGISTRY}/${SERVICE_NAME}:${tag}${NC}"
     else
@@ -82,11 +82,11 @@ build_image() {
 # Function to scan image
 scan_image() {
     local tag=$1
-    
+
     if [ "${SCAN}" == "true" ] && command -v trivy &> /dev/null; then
         echo -e "${YELLOW}Scanning image for vulnerabilities...${NC}"
         trivy image --severity HIGH,CRITICAL ${REGISTRY}/${SERVICE_NAME}:${tag}
-        
+
         if [ $? -ne 0 ]; then
             echo -e "${RED}⚠ Security vulnerabilities found!${NC}"
             # Don't exit, just warn
@@ -99,11 +99,11 @@ scan_image() {
 # Function to push image
 push_image() {
     local tag=$1
-    
+
     if [ "${PUSH}" == "true" ]; then
         echo -e "${YELLOW}Pushing image: ${REGISTRY}/${SERVICE_NAME}:${tag}${NC}"
         docker push ${REGISTRY}/${SERVICE_NAME}:${tag}
-        
+
         if [ $? -eq 0 ]; then
             echo -e "${GREEN}✓ Successfully pushed ${REGISTRY}/${SERVICE_NAME}:${tag}${NC}"
         else
@@ -117,7 +117,7 @@ push_image() {
 tag_image() {
     local source=$1
     local target=$2
-    
+
     echo -e "${YELLOW}Tagging ${source} as ${target}${NC}"
     docker tag ${REGISTRY}/${SERVICE_NAME}:${source} ${REGISTRY}/${SERVICE_NAME}:${target}
 }
@@ -126,13 +126,13 @@ tag_image() {
 main() {
     # Change to repository root
     cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-    
+
     # Build main image
     build_image "${VERSION}"
-    
+
     # Scan the image
     scan_image "${VERSION}"
-    
+
     # Additional tags
     if [[ "${VERSION}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         # This is a semantic version tag
@@ -148,7 +148,7 @@ main() {
             push_image "dev"
         fi
     fi
-    
+
     # Build development image if requested
     if [ "${BUILD_DEV}" == "true" ]; then
         build_image "${VERSION}-dev" "Dockerfile.dev"
@@ -156,7 +156,7 @@ main() {
             push_image "${VERSION}-dev"
         fi
     fi
-    
+
     echo ""
     echo -e "${GREEN}Build complete!${NC}"
     echo ""

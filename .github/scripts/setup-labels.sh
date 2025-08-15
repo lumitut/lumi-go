@@ -48,7 +48,7 @@ create_or_update_label() {
     local name=$1
     local color=$2
     local description=$3
-    
+
     # Check if label exists
     if gh label list --repo "$REPO" --json name | grep -q "\"$name\""; then
         echo -e "${YELLOW}Updating label: $name${NC}"
@@ -86,7 +86,7 @@ import subprocess
 
 with open('$LABELS_FILE', 'r') as f:
     labels = json.load(f)
-    
+
 for label in labels:
     print(f\"Processing: {label['name']}\")
     subprocess.run([

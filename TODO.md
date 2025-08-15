@@ -10,10 +10,10 @@
 
 - [x] Create repository with LICENSE, README, CONTRIBUTING, CODEOWNERS, SECURITY, ADR index.
 - [x] Configure branch protections (required reviews, status checks).
-- [ ] Define PR templates and labels (obs, security, docs, breaking-change).
+- [x] Define PR templates and labels (obs, security, docs, breaking-change).
 - [ ] Document engineering setup (toolchain versions for Go, Docker, Helm, kubectl, buf, sqlc, golangci-lint, OTEL Collector).
 - [x] Enable dependency, container, and secret scanning in the repo.
-- [ ] Create initial `deploy/helm` skeleton and `deploy/docker` skeleton (placeholders only; no code).
+- [x] Create initial `deploy/helm` skeleton and `deploy/docker` skeleton (placeholders only; no code).
 - [ ] Tag and publish release `v0.0.1`.
 
 

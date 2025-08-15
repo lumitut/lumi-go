@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the security policy for the Go Middle-Service Template (GMT) and services built using this template. Security is a critical aspect of our microservices architecture, and we follow defense-in-depth principles.
+This document outlines the security policy for the lumi-go (Go Microservice Template) and services built using this template. Security is a critical aspect of our microservices architecture, and we follow defense-in-depth principles.
 
 ## Supported Versions
 

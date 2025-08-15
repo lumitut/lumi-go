@@ -23,6 +23,7 @@ assignees: ''
 ## Affected Components
 
 ### Service Details
+
 - Service Name: 
 - Version: 
 - Environment: <!-- dev/staging/prod -->

@@ -1,4 +1,4 @@
-# Gitleaks configuration for lumi-go
+# Gitleaks configuration for lumi-go microservice template
 # Reference: https://github.com/gitleaks/gitleaks
 
 title = "lumi-go Gitleaks Configuration"

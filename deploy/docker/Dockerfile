@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for Go Middle-Service Template
+# Multi-stage Dockerfile for lumi-go (Go Microservice Template)
 # Optimized for security, size, and performance
 
 # Build stage
@@ -74,7 +74,7 @@ USER nonroot:nonroot
 # HTTP API
 EXPOSE 8080
 # gRPC/Connect RPC
-EXPOSE 8081  
+EXPOSE 8081
 # Prometheus metrics
 EXPOSE 9090
 

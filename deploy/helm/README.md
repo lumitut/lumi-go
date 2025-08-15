@@ -2,7 +2,7 @@
 
 ## Overview
 
-This Helm chart deploys the Go Middle-Service Template (GMT) application on a Kubernetes cluster.
+This Helm chart deploys the lumi-go (Go Microservice Template) application on a Kubernetes cluster.
 
 ## Prerequisites
 

@@ -1,4 +1,4 @@
-# Dependabot configuration for Go microservice template
+# Dependabot configuration for lumi-go microservice template
 # Automatically creates PRs to update dependencies with security vulnerabilities
 # Reference: https://docs.github.com/en/code-security/dependabot
 

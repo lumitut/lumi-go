@@ -10,6 +10,7 @@ assignees: ''
 <!-- A clear and concise description of what the bug is -->
 
 ## Environment
+
 - **Service Version:** <!-- e.g., v1.2.3 or commit hash -->
 - **Go Version:** <!-- e.g., 1.22 -->
 - **Operating System:** <!-- e.g., Ubuntu 22.04, macOS 14.0 -->

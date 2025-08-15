@@ -1,4 +1,4 @@
-# Default values for lumi-go
+# Default values for lumi-go (Go Microservice Template)
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -135,7 +135,7 @@ config:
   logLevel: info
   # -- Gin mode (debug/release/test)
   ginMode: release
-  
+
   # Timeouts
   timeouts:
     # -- Read timeout
@@ -172,7 +172,7 @@ healthcheck:
     timeoutSeconds: 5
     successThreshold: 1
     failureThreshold: 3
-  
+
   # -- Enable readiness probe
   readinessProbe:
     enabled: true

@@ -12,7 +12,7 @@
 
 ---
 
-## Phase 1 — Local Developer Experience (LDX) - **COMPLETE** ✅
+## Phase 1 — Local Developer Experience (LDX) - **COMPLETE**
 
 - [x] Establish repo directory layout (cmd, internal/*, api/*, deploy/\*, migrations) with README stubs.
 - [x] Add docker-compose services for Postgres, Redis, OTEL Collector, Prometheus, Grafana.
@@ -24,13 +24,13 @@
 
 ---
 
-## Phase 2 — Observability First → Release `v0.0.3`
+## Phase 2 — Observability First → Release `v0.0.3` - **COMPLETE**
 
 - [x] Wire structured logging standard (JSON, correlation fields) — documented contract.
 - [x] Register default metrics and Prometheus scrape endpoint.
 - [x] Configure OTLP export to local collector; define service resource attrs (name, env, version).
 - [x] Provide a starter Grafana dashboard JSON (latency, errors, RPS placeholders).
-- [ ] Tag and publish release `v0.0.3`.
+- [x] Tag and publish release `v0.0.3`.
 
 ---
 
@@ -41,6 +41,11 @@
 - [ ] RPC front door with Connect on separate listener (interceptors: tracing, logging, auth).
 - [ ] Graceful lifecycle and shutdown with readiness flip on drain.
 - [ ] Tag and publish release `v0.0.4`.
+
+---
+
+## Phase 3.1 - AWS Deploy
+
 - [ ] AWS prep: create ECR repository, dev EKS namespace, and CI OIDC/IAM role for future pushes.
 - [ ] AWS smoke: publish image to ECR; deploy to dev.
   - [ ] Install/update Helm chart to dev with ops placeholders; verify pod runs.

@@ -108,9 +108,10 @@ See [engineering.md](./engineering.md) for complete list.
 
 ```mermaid
 graph TB
-    Client[Client] --> LB[Load Balancer]
-    LB --> API[API Gateway]
-    API --> MS[Microservice]
+    Client[App] --> LB[Load Balancer]
+    Client[Site] --> LB[Load Balancer]
+    LB --> API[BFF API Gateway]
+    API --> MS[lumi-Go Microservice]
     MS --> DB[(PostgreSQL)]
     MS --> Cache[(Redis)]
     MS --> Queue[Message Queue]
@@ -118,18 +119,6 @@ graph TB
     OTEL --> Jaeger[Jaeger]
     OTEL --> Prom[Prometheus]
     Prom --> Grafana[Grafana]
-```
-
-## 📋 Development Workflow
-
-```mermaid
-graph LR
-    A[Write Code] --> B[Test Locally]
-    B --> C[Run Linters]
-    C --> D[Commit]
-    D --> E[Push]
-    E --> F[CI/CD]
-    F --> G[Deploy]
 ```
 
 ## 🧪 Testing Strategy

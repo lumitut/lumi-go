@@ -109,7 +109,7 @@ See [engineering.md](./engineering.md) for complete list.
 ```mermaid
 graph TB
     Client[App] --> LB[Load Balancer]
-    Client[Site] --> LB[Load Balancer]
+    Client[Site] --> LB
     LB --> API[BFF API Gateway]
     API --> MS[lumi-Go Microservice]
     MS --> DB[(PostgreSQL)]

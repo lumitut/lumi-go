@@ -12,10 +12,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lumitut/lumi-go/internal/middleware"
 	"github.com/lumitut/lumi-go/internal/observability/logger"
+	"github.com/lumitut/lumi-go/internal/observability/metrics"
+	"github.com/lumitut/lumi-go/internal/observability/tracing"
 	"go.uber.org/zap"
 )
 
 func main() {
+	ctx := context.Background()
+
 	// Initialize logger
 	logConfig := logger.Config{
 		Level:             getEnv("LOG_LEVEL", "info"),
@@ -33,10 +37,31 @@ func main() {
 	}
 	defer logger.Sync()
 
+	// Initialize metrics
+	serviceName := getEnv("SERVICE_NAME", "lumi-go")
+	metrics.Initialize(serviceName, "api")
+	metrics.StartUptimeCounter(ctx)
+
+	// Initialize tracing
+	tracingConfig := tracing.DefaultConfig()
+	shutdown, err := tracing.Initialize(ctx, tracingConfig)
+	if err != nil {
+		logger.Error(ctx, "Failed to initialize tracing", err)
+	} else {
+		defer func() {
+			if err := shutdown(context.Background()); err != nil {
+				logger.Error(context.Background(), "Failed to shutdown tracing", err)
+			}
+		}()
+	}
+
 	// Log startup
-	logger.Info(context.Background(), "Starting lumi-go service",
+	logger.Info(ctx, "Starting lumi-go service",
 		zap.String("version", getEnv("SERVICE_VERSION", "unknown")),
 		zap.String("environment", getEnv("ENVIRONMENT", "development")),
+		zap.String("service_name", serviceName),
+		zap.Bool("tracing_enabled", tracingConfig.Enabled),
+		zap.String("otel_endpoint", tracingConfig.ExporterEndpoint),
 	)
 
 	// Setup Gin
@@ -95,6 +120,14 @@ func setupRouter() *gin.Engine {
 	// Correlation middleware (must be first)
 	router.Use(middleware.Correlation())
 
+	// Metrics middleware
+	router.Use(middleware.MetricsWithConfig(middleware.MetricsConfig{
+		SkipPaths: []string{"/health", "/ready", "/metrics"},
+		GroupedPaths: map[string]string{
+			"/api/v1/users/:id": "/api/v1/users/{id}",
+		},
+	}))
+
 	// Logging middleware
 	router.Use(middleware.Logging(
 		"/health",
@@ -105,6 +138,9 @@ func setupRouter() *gin.Engine {
 	// Health check endpoints
 	router.GET("/health", handleHealth)
 	router.GET("/ready", handleReady)
+
+	// Metrics endpoint
+	router.GET("/metrics", gin.WrapH(metrics.Handler()))
 
 	// API routes
 	v1 := router.Group("/api/v1")

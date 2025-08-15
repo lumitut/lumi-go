@@ -12,6 +12,7 @@ Welcome to the lumi-go (Go Microservice Template) documentation.
 ### Core Components
 - **[Observability](./observability.md)** - Logging, metrics, and tracing
 - **[Logging Contract](./logging.md)** - Structured logging standards
+- **[Metrics Guide](./metrics.md)** - Prometheus metrics and dashboards
 - **[Database Migrations](./migrations.md)** - Schema management
 - **[Docker Setup](./docker.md)** - Container configuration
 - **[Helm Charts](./helm.md)** - Kubernetes deployment

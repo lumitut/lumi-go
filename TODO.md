@@ -27,9 +27,9 @@
 ## Phase 2 — Observability First → Release `v0.0.3`
 
 - [x] Wire structured logging standard (JSON, correlation fields) — documented contract.
-- [ ] Register default metrics and Prometheus scrape endpoint.
-- [ ] Configure OTLP export to local collector; define service resource attrs (name, env, version).
-- [ ] Provide a starter Grafana dashboard JSON (latency, errors, RPS placeholders).
+- [x] Register default metrics and Prometheus scrape endpoint.
+- [x] Configure OTLP export to local collector; define service resource attrs (name, env, version).
+- [x] Provide a starter Grafana dashboard JSON (latency, errors, RPS placeholders).
 - [ ] Tag and publish release `v0.0.3`.
 
 ---

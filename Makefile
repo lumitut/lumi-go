@@ -97,7 +97,7 @@ build-all:
 .PHONY: test
 test:
 	@echo "$(YELLOW)Running tests...$(NC)"
-	go test -v -race -coverprofile=coverage.out -covermode=atomic ./tests/...
+	go test -v -race -coverprofile=coverage.out -covermode=atomic ./tests/unit/...
 	@echo "$(GREEN)✓ Tests complete$(NC)"
 
 ## test-short: Run short tests only

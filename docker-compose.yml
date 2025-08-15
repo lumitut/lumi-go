@@ -118,8 +118,9 @@ services:
       - GF_INSTALL_PLUGINS=redis-datasource
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./deploy/helm/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./deploy/grafana/dashboards:/etc/grafana/provisioning/dashboards
       - ./deploy/docker/grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./deploy/docker/grafana-dashboard-provider.yml:/etc/grafana/provisioning/dashboards/provider.yml
     networks:
       - lumi-network
     depends_on:

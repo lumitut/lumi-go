@@ -1,0 +1,197 @@
+[
+  {
+    "name": "bug",
+    "color": "d73a4a",
+    "description": "Something isn't working"
+  },
+  {
+    "name": "enhancement",
+    "color": "a2eeef",
+    "description": "New feature or request"
+  },
+  {
+    "name": "documentation",
+    "color": "0075ca",
+    "description": "Improvements or additions to documentation"
+  },
+  {
+    "name": "security",
+    "color": "ee0000",
+    "description": "Security vulnerability or improvement"
+  },
+  {
+    "name": "observability",
+    "color": "7057ff",
+    "description": "Logging, metrics, tracing, or monitoring"
+  },
+  {
+    "name": "performance",
+    "color": "00ff00",
+    "description": "Performance improvement or issue"
+  },
+  {
+    "name": "breaking-change",
+    "color": "ff0000",
+    "description": "Introduces breaking changes"
+  },
+  {
+    "name": "dependencies",
+    "color": "0366d6",
+    "description": "Pull requests that update dependencies"
+  },
+  {
+    "name": "infrastructure",
+    "color": "c5def5",
+    "description": "Infrastructure, deployment, or CI/CD"
+  },
+  {
+    "name": "go",
+    "color": "00add8",
+    "description": "Go language specific"
+  },
+  {
+    "name": "docker",
+    "color": "2496ed",
+    "description": "Docker or container related"
+  },
+  {
+    "name": "kubernetes",
+    "color": "326ce5",
+    "description": "Kubernetes or Helm related"
+  },
+  {
+    "name": "ci",
+    "color": "fbca04",
+    "description": "Continuous Integration"
+  },
+  {
+    "name": "github-actions",
+    "color": "000000",
+    "description": "GitHub Actions workflows"
+  },
+  {
+    "name": "triage",
+    "color": "666666",
+    "description": "Needs triage and prioritization"
+  },
+  {
+    "name": "good first issue",
+    "color": "7057ff",
+    "description": "Good for newcomers"
+  },
+  {
+    "name": "help wanted",
+    "color": "008672",
+    "description": "Extra attention is needed"
+  },
+  {
+    "name": "wontfix",
+    "color": "ffffff",
+    "description": "This will not be worked on"
+  },
+  {
+    "name": "duplicate",
+    "color": "cfd3d7",
+    "description": "This issue or pull request already exists"
+  },
+  {
+    "name": "invalid",
+    "color": "e4e669",
+    "description": "This doesn't seem right"
+  },
+  {
+    "name": "blocked",
+    "color": "ff0000",
+    "description": "Blocked by another issue or external dependency"
+  },
+  {
+    "name": "priority:critical",
+    "color": "ff0000",
+    "description": "Critical priority - immediate action required"
+  },
+  {
+    "name": "priority:high",
+    "color": "ff6600",
+    "description": "High priority"
+  },
+  {
+    "name": "priority:medium",
+    "color": "ffcc00",
+    "description": "Medium priority"
+  },
+  {
+    "name": "priority:low",
+    "color": "00ff00",
+    "description": "Low priority"
+  },
+  {
+    "name": "size:xs",
+    "color": "00ff00",
+    "description": "Extra small change (< 10 lines)"
+  },
+  {
+    "name": "size:s",
+    "color": "66ff00",
+    "description": "Small change (10-50 lines)"
+  },
+  {
+    "name": "size:m",
+    "color": "ffcc00",
+    "description": "Medium change (50-200 lines)"
+  },
+  {
+    "name": "size:l",
+    "color": "ff6600",
+    "description": "Large change (200-500 lines)"
+  },
+  {
+    "name": "size:xl",
+    "color": "ff0000",
+    "description": "Extra large change (> 500 lines)"
+  },
+  {
+    "name": "status:in-progress",
+    "color": "ffeb3b",
+    "description": "Work in progress"
+  },
+  {
+    "name": "status:review-needed",
+    "color": "fbca04",
+    "description": "Needs review"
+  },
+  {
+    "name": "status:changes-requested",
+    "color": "ff9800",
+    "description": "Changes requested by reviewer"
+  },
+  {
+    "name": "status:approved",
+    "color": "4caf50",
+    "description": "Approved and ready to merge"
+  },
+  {
+    "name": "type:feature",
+    "color": "1d76db",
+    "description": "New feature"
+  },
+  {
+    "name": "type:bugfix",
+    "color": "d73a4a",
+    "description": "Bug fix"
+  },
+  {
+    "name": "type:refactor",
+    "color": "e99695",
+    "description": "Code refactoring"
+  },
+  {
+    "name": "type:test",
+    "color": "00ff00",
+    "description": "Test improvements or additions"
+  },
+  {
+    "name": "type:chore",
+    "color": "fef2c0",
+    "description": "Maintenance or non-code changes"
+  }
+]

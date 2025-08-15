@@ -1,0 +1,42 @@
+# Development Dockerfile with hot-reload support
+# NOT FOR PRODUCTION USE
+
+FROM golang:1.22-alpine
+
+# Install development tools
+RUN apk add --no-cache \
+    git \
+    ca-certificates \
+    tzdata \
+    make \
+    gcc \
+    musl-dev \
+    curl \
+    bash
+
+# Install development utilities
+RUN go install github.com/cosmtrek/air@latest && \
+    go install github.com/go-delve/delve/cmd/dlv@latest && \
+    go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && \
+    go install golang.org/x/tools/cmd/goimports@latest && \
+    go install github.com/google/wire/cmd/wire@latest && \
+    go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest && \
+    go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
+# Set working directory
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy air config for hot reload
+COPY .air.toml ./
+
+# Expose ports
+EXPOSE 8080 8081 9090 2345
+
+# Default command with hot reload
+CMD ["air", "-c", ".air.toml"]

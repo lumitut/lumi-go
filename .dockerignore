@@ -1,0 +1,71 @@
+# Docker ignore file
+# Exclude files and directories from Docker build context
+
+# Git files
+.git
+.gitignore
+.github
+
+# Documentation
+*.md
+docs/
+LICENSE
+CONTRIBUTING.md
+SECURITY.md
+
+# Development files
+.air.toml
+.env
+.env.*
+!.env.example
+.editorconfig
+.pre-commit-config.yaml
+.gitleaks.toml
+
+# Test files
+*_test.go
+testdata/
+coverage.out
+coverage.html
+*.test
+
+# Build artifacts
+/service
+/bin/
+/dist/
+/build/
+/tmp/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Helm charts
+deploy/helm/
+deploy/k8s/
+
+# Docker files (prevent recursion)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.drone.yml
+Jenkinsfile
+
+# Dependencies (will be downloaded during build)
+vendor/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# OS files
+Thumbs.db

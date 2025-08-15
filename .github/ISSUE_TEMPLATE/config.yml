@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Security Vulnerability
+    url: mailto:security@lumitut.com
+    about: Please report critical security vulnerabilities via email, not as a public issue
+  - name: 💬 Discussions
+    url: https://github.com/lumitut/lumi-go/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 📚 Documentation
+    url: https://docs.lumitut.com
+    about: Check our documentation for guides and API references
+  - name: 💼 Enterprise Support
+    url: mailto:support@lumitut.com
+    about: Contact our enterprise support team for priority assistance

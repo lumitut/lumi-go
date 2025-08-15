@@ -1,0 +1,47 @@
+apiVersion: v2
+name: lumi-go
+description: Helm chart for lumi-go
+type: application
+
+# Chart version - increment for each chart release
+version: 0.0.1
+
+# Application version - matches the service version
+appVersion: "0.0.1"
+
+keywords:
+  - go
+  - microservice
+  - gin
+  - grpc
+  - kubernetes
+
+home: https://github.com/lumitut/lumi-go
+sources:
+  - https://github.com/lumitut/lumi-go
+
+maintainers:
+  - name: Platform Team
+    email: platform@lumitut.com
+
+# Chart dependencies (if any)
+dependencies: []
+  # Example dependencies:
+  # - name: postgresql
+  #   version: "12.x.x"
+  #   repository: "https://charts.bitnami.com/bitnami"
+  #   condition: postgresql.enabled
+  # - name: redis
+  #   version: "17.x.x"
+  #   repository: "https://charts.bitnami.com/bitnami"
+  #   condition: redis.enabled
+
+annotations:
+  # Artifact Hub annotations
+  artifacthub.io/category: "backend"
+  artifacthub.io/license: "MIT"
+  artifacthub.io/signKey: |
+    # GPG public key for signed charts (optional)
+  artifacthub.io/recommendations: |
+    - url: https://artifacthub.io/packages/helm/bitnami/postgresql
+    - url: https://artifacthub.io/packages/helm/bitnami/redis

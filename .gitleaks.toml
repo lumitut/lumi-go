@@ -1,0 +1,133 @@
+# Gitleaks configuration for lumi-go
+# Reference: https://github.com/gitleaks/gitleaks
+
+title = "lumi-go Gitleaks Configuration"
+
+[extend]
+# Extend the base configuration
+useDefault = true
+
+[allowlist]
+description = "Allowlist for GMT template"
+paths = [
+    # Ignore example and documentation files
+    '''\.env\.example$''',
+    '''\.env\.sample$''',
+    '''README\.md$''',
+    '''.*_test\.go$''',
+    '''testdata/''',
+    '''vendor/''',
+    '''\.git/''',
+    '''docs/''',
+]
+
+# Allow specific test patterns that might look like secrets
+regexes = [
+    '''test[_\-]?key''',
+    '''fake[_\-]?secret''',
+    '''dummy[_\-]?token''',
+    '''example[_\-]?api[_\-]?key''',
+    '''localhost:[0-9]{4,5}''',
+    '''127\.0\.0\.1:[0-9]{4,5}''',
+]
+
+[[rules]]
+description = "Lumitut API Key"
+id = "lumitut-api-key"
+regex = '''(?i)(lumitut[_\-]?api[_\-]?key|lumi[_\-]?key)['"\s]*[=:]['"\s]*[a-zA-Z0-9]{32,}'''
+tags = ["key", "lumitut"]
+
+[[rules]]
+description = "JWT Token"
+id = "jwt-token"
+regex = '''eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'''
+tags = ["jwt", "token"]
+
+[[rules]]
+description = "PostgreSQL Connection String"
+id = "postgres-connection"
+regex = '''(?i)(postgres|postgresql|pgsql)://[^:]+:[^@]+@[^/]+/\w+'''
+tags = ["database", "postgres"]
+
+[[rules]]
+description = "Redis Connection String"
+id = "redis-connection"
+regex = '''(?i)redis://[^:]+:[^@]+@[^/]+'''
+tags = ["database", "redis"]
+
+[[rules]]
+description = "Private Key"
+id = "private-key"
+regex = '''-----BEGIN (RSA|EC|DSA|OPENSSH) PRIVATE KEY-----'''
+tags = ["key", "private"]
+
+[[rules]]
+description = "AWS Access Key ID"
+id = "aws-access-key"
+regex = '''(?i)(aws[_\-]?access[_\-]?key[_\-]?id|access[_\-]?key[_\-]?id)['"\s]*[=:]['"\s]*[A-Z0-9]{20}'''
+tags = ["aws", "key"]
+
+[[rules]]
+description = "AWS Secret Access Key"
+id = "aws-secret-key"
+regex = '''(?i)(aws[_\-]?secret[_\-]?access[_\-]?key|secret[_\-]?access[_\-]?key|secret[_\-]?key)['"\s]*[=:]['"\s]*[A-Za-z0-9/+=]{40}'''
+tags = ["aws", "secret"]
+
+[[rules]]
+description = "Generic API Key"
+id = "generic-api-key"
+regex = '''(?i)(api[_\-]?key|apikey)['"\s]*[=:]['"\s]*[a-zA-Z0-9]{32,}'''
+tags = ["key", "api"]
+[rules.allowlist]
+regexes = [
+    '''(?i)example''',
+    '''(?i)test''',
+    '''(?i)fake''',
+    '''(?i)dummy''',
+]
+
+[[rules]]
+description = "Generic Secret"
+id = "generic-secret"
+regex = '''(?i)(secret|password|passwd|pwd)['"\s]*[=:]['"\s]*[^\s]{8,}'''
+tags = ["secret", "password"]
+[rules.allowlist]
+regexes = [
+    '''(?i)example''',
+    '''(?i)test''',
+    '''(?i)fake''',
+    '''(?i)dummy''',
+    '''(?i)TODO''',
+    '''(?i)FIXME''',
+    '''(?i)placeholder''',
+]
+
+[[rules]]
+description = "Slack Webhook"
+id = "slack-webhook"
+regex = '''https://hooks\.slack\.com/services/[A-Za-z0-9+/]{44,}'''
+tags = ["webhook", "slack"]
+
+[[rules]]
+description = "GitHub Token"
+id = "github-token"
+regex = '''(?i)(github[_\-]?token|gh[_\-]?token|github[_\-]?pat)['"\s]*[=:]['"\s]*(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36,}'''
+tags = ["token", "github"]
+
+[[rules]]
+description = "Stripe API Key"
+id = "stripe-api-key"
+regex = '''(?i)stripe['"\s]*[=:]['"\s]*(sk|pk)_(test|live)_[A-Za-z0-9]{24,}'''
+tags = ["key", "stripe"]
+
+# Custom rules for internal patterns
+[[rules]]
+description = "Internal Service Token"
+id = "internal-service-token"
+regex = '''(?i)(service[_\-]?token|svc[_\-]?token)['"\s]*[=:]['"\s]*[a-zA-Z0-9]{40,}'''
+tags = ["token", "internal"]
+[rules.allowlist]
+regexes = [
+    '''(?i)example''',
+    '''(?i)test''',
+]

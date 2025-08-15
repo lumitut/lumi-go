@@ -1,6 +1,6 @@
-# TODO.md — GMT (Gin) Template Build Checklist
+# TODO.md — lumi-go Template Build Checklist
 
-> Use this checklist to deliver the Go Middle-Service Template in small, deployable phases.
+> Use this checklist to deliver the lumi-go in small, deployable phases.
 > Each phase ends with a tagged release and an AWS deployable artefact for testing.
 > Versioning plan: Phase 0 → `v0.0.1`, Phase 1 → `v0.0.2`, … Phase 10 → `v0.0.11`, Phase 11 → `v1.0.0`.
 
@@ -8,15 +8,14 @@
 
 ## Phase 0 — Foundations → Release `v0.0.1`
 
-* [x] Create repository with LICENSE, README, CONTRIBUTING, CODEOWNERS, SECURITY, ADR index.
-* [ ] Configure branch protections (required reviews, status checks).
-* [ ] Define PR templates and labels (obs, security, docs, breaking-change).
-* [ ] Document engineering setup (toolchain versions for Go, Docker, Helm, kubectl, buf, sqlc, golangci-lint, OTEL Collector).
-* [ ] Enable dependency, container, and secret scanning in the repo.
-* [ ] Create initial `deploy/helm` skeleton and `deploy/docker` skeleton (placeholders only; no code).
-* [ ] AWS prep: create ECR repository, dev EKS namespace, and CI OIDC/IAM role for future pushes.
-* [ ] Tag and publish release `v0.0.1`.
-* [ ] AWS smoke: push a placeholder container image to ECR and perform a Helm dry-run deploy in dev (manually if needed).
+- [x] Create repository with LICENSE, README, CONTRIBUTING, CODEOWNERS, SECURITY, ADR index.
+- [x] Configure branch protections (required reviews, status checks).
+- [ ] Define PR templates and labels (obs, security, docs, breaking-change).
+- [ ] Document engineering setup (toolchain versions for Go, Docker, Helm, kubectl, buf, sqlc, golangci-lint, OTEL Collector).
+- [x] Enable dependency, container, and secret scanning in the repo.
+- [ ] Create initial `deploy/helm` skeleton and `deploy/docker` skeleton (placeholders only; no code).
+- [ ] Tag and publish release `v0.0.1`.
+
 
 ---
 
@@ -24,8 +23,9 @@
 
 * [ ] Add docker-compose services for Postgres, Redis, OTEL Collector, Prometheus, Grafana.
 * [ ] Provide a single command to start/stop local infra and a DB seed script (placeholder).
-* [ ] Establish repo directory layout (cmd, internal/*, api/*, deploy/\*, migrations) with README stubs.
+* [x] Establish repo directory layout (cmd, internal/*, api/*, deploy/\*, migrations) with README stubs.
 * [ ] Validate clean local bring-up on a fresh machine.
+- [ ] AWS prep: create ECR repository, dev EKS namespace, and CI OIDC/IAM role for future pushes.
 * [ ] Tag and publish release `v0.0.2`.
 * [ ] AWS smoke: publish image to ECR; install/update Helm chart to dev with ops placeholders; verify pod runs.
 

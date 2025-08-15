@@ -1,0 +1,79 @@
+# Dependabot configuration for Go microservice template
+# Automatically creates PRs to update dependencies with security vulnerabilities
+# Reference: https://docs.github.com/en/code-security/dependabot
+
+version: 2
+updates:
+  # Go modules dependency updates
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "04:00"
+      timezone: "UTC"
+    # Security updates are always created immediately regardless of schedule
+    open-pull-requests-limit: 10
+    pull-request-branch-name:
+      separator: "-"
+    labels:
+      - "dependencies"
+      - "go"
+      - "security"
+    reviewers:
+      - "@lumitut/platform-team"  # Update with your team handle
+    assignees:
+      - "@lumitut/security-team"  # Update with your team handle
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    groups:
+      # Group minor and patch updates together
+      go-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    # Allow only security updates for these critical packages
+    allow:
+      - dependency-type: "all"
+    ignore:
+      # Add any dependencies you want to ignore here
+      # Example: - dependency-name: "github.com/example/package"
+
+  # Docker base image updates
+  - package-ecosystem: "docker"
+    directory: "/deploy/docker"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "docker"
+      - "security"
+    reviewers:
+      - "@lumitut/platform-team"  # Update with your team handle
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  # GitHub Actions workflow updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "ci"
+      - "github-actions"
+    reviewers:
+      - "@lumitut/platform-team"  # Update with your team handle
+    commit-message:
+      prefix: "ci"
+      include: "scope"

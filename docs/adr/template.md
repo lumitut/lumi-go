@@ -1,4 +1,4 @@
-# ADR 00#: Decision Record: [Short Title]
+# ADR 00#: [Short Title]
 
 ## Status
 Proposed / Accepted / Deprecated / Superseded by [ADR #]

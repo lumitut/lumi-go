@@ -1,0 +1,132 @@
+# Air configuration for hot-reload development
+# https://github.com/cosmtrek/air
+
+# Working directory
+root = "."
+testdata_dir = "testdata"
+tmp_dir = "tmp"
+
+[build]
+  # Array of commands to run before each build
+  pre_cmd = ["echo 'Building...'"]
+
+  # Just plain old shell command. You could use `make` as well.
+  cmd = "go build -gcflags=\"all=-N -l\" -o ./tmp/main ./cmd/server"
+
+  # Array of commands to run after build
+  post_cmd = ["echo 'Build complete!'"]
+
+  # Binary file yields from `cmd`.
+  bin = "tmp/main"
+
+  # Customize binary, can setup environment variables when run your app.
+  full_bin = "dlv exec ./tmp/main --listen=:2345 --headless=true --api-version=2 --accept-multiclient --continue -- serve"
+
+  # This log file places in your tmp_dir.
+  log = "air.log"
+
+  # Watch these filename extensions.
+  include_ext = ["go", "tpl", "tmpl", "html", "yaml", "yml", "toml", "env", "sql"]
+
+  # Ignore these filename extensions or directories.
+  exclude_dir = ["assets", "tmp", "vendor", "testdata", "docs", "deploy", ".git", ".github", "scripts", "migrations/testdata"]
+
+  # Watch these directories if you specified.
+  include_dir = ["cmd", "internal", "pkg", "api"]
+
+  # Watch these files.
+  include_file = []
+
+  # Exclude files.
+  exclude_file = ["*_test.go", "*.test"]
+
+  # Exclude specific regular expressions.
+  exclude_regex = ["_test\\.go$", "\\.test$"]
+
+  # Exclude unchanged files.
+  exclude_unchanged = false
+
+  # Follow symlink for directories
+  follow_symlink = false
+
+  # Duration to wait before restarting the binary.
+  delay = 1000
+
+  # Stop running old binary when build errors occur.
+  stop_on_error = true
+
+  # Send Interrupt signal before killing process (windows does not support this feature)
+  send_interrupt = true
+
+  # Delay after sending Interrupt signal
+  kill_delay = 1000
+
+  # Rerun binary even when it exits successfully.
+  rerun = false
+
+  # Rerun binary when files are added.
+  rerun_delay = 500
+
+  # Add additional arguments when running binary (bin/full_bin). Will run './tmp/main hello world'.
+  args_bin = []
+
+[log]
+  # Show log time
+  time = true
+
+  # Only show main log (silences watcher, build, runner)
+  main_only = false
+
+[color]
+  # Customize each part's color. If no color found, use the raw app log.
+  main = "magenta"
+  watcher = "cyan"
+  build = "yellow"
+  runner = "green"
+  app = ""
+
+[misc]
+  # Delete tmp directory on exit
+  clean_on_exit = true
+
+[screen]
+  # Clear console on rebuild
+  clear_on_rebuild = true
+
+  # Keep scroll position on clear
+  keep_scroll = true
+
+# Environment variables for the application
+[env]
+  ENV = "dev"
+  LOG_LEVEL = "debug"
+  GIN_MODE = "debug"
+  HTTP_ADDR = ":8080"
+  RPC_ADDR = ":8081"
+  PROM_ADDR = ":9090"
+  PG_URL = "postgres://lumigo:lumigo@localhost:5432/lumigo?sslmode=disable"
+  REDIS_URL = "redis://localhost:6379/0"
+  OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4317"
+  OTEL_SERVICE_NAME = "lumi-go"
+  OTEL_RESOURCE_ATTRIBUTES = "service.name=lumi-go,service.version=dev,deployment.environment=development"
+
+  # Feature flags
+  FLAGS_PROVIDER = "none"
+
+  # JWT settings (development only - use proper secrets in production!)
+  JWT_ISSUER = "http://localhost:8080"
+  JWT_AUDIENCE = "lumi-go"
+  JWKS_URL = "http://localhost:8080/.well-known/jwks.json"
+
+  # Rate limiting
+  RATE_RPS = "1000"
+
+  # Circuit breaker
+  CB_FAILURES = "5"
+  CB_TIMEOUT = "30s"
+
+  # Timeouts
+  READ_TIMEOUT = "5s"
+  WRITE_TIMEOUT = "10s"
+  IDLE_TIMEOUT = "60s"
+  GRACE_PERIOD = "20s"

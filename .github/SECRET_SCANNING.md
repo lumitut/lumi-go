@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines how to enable and configure secret scanning for the lumi-go (Go Microservice Template) repository.
+This document outlines how to enable and configure secret scanning for the lumi-go (Go Middle-Service Template) repository.
 
 ## GitHub Secret Scanning Features
 

@@ -1,0 +1,58 @@
+# EditorConfig helps maintain consistent coding styles between editors/IDEs
+# https://editorconfig.org
+
+root = true
+
+[*]
+end_of_line = lf
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Default indentation for text-like files
+indent_style = space
+indent_size = 2
+
+# Go uses tabs (gofmt/goimports)
+[*.go]
+indent_style = tab
+indent_size = 8
+
+# Makefiles require tabs
+[Makefile]
+indent_style = tab
+
+# YAML (Helm, CI, k8s manifests)
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# JSON, TOML
+[*.{json,toml}]
+indent_style = space
+indent_size = 2
+
+# Protocol Buffers
+[*.proto]
+indent_style = space
+indent_size = 2
+
+# SQL (migrations)
+[*.sql]
+indent_style = space
+indent_size = 2
+
+# Shell scripts
+[*.sh]
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+
+# Markdown (preserve intentional trailing spaces)
+[*.md]
+trim_trailing_whitespace = false
+
+# Helm templates (Go templates)
+[templates/**]
+indent_style = space
+indent_size = 2

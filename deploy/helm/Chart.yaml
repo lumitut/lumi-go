@@ -4,10 +4,10 @@ description: Helm chart for lumi-go
 type: application
 
 # Chart version - increment for each chart release
-version: 0.0.1
+version: 0.0.2
 
 # Application version - matches the service version
-appVersion: "0.0.1"
+appVersion: "0.0.2"
 
 keywords:
   - go

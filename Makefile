@@ -97,20 +97,20 @@ build-all:
 .PHONY: test
 test:
 	@echo "$(YELLOW)Running tests...$(NC)"
-	go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+	go test -v -race -coverprofile=coverage.out -covermode=atomic ./tests/...
 	@echo "$(GREEN)✓ Tests complete$(NC)"
 
 ## test-short: Run short tests only
 .PHONY: test-short
 test-short:
 	@echo "$(YELLOW)Running short tests...$(NC)"
-	go test -v -short ./...
+	go test -v -short ./tests/...
 
 ## test-integration: Run integration tests
 .PHONY: test-integration
 test-integration:
 	@echo "$(YELLOW)Running integration tests...$(NC)"
-	go test -v -tags=integration ./...
+	go test -v -tags=integration ./tests/...
 
 ## coverage: Generate test coverage report
 .PHONY: coverage
@@ -123,7 +123,7 @@ coverage: test
 .PHONY: benchmark
 benchmark:
 	@echo "$(YELLOW)Running benchmarks...$(NC)"
-	go test -bench=. -benchmem ./...
+	go test -bench=. -benchmem ./tests/...
 
 ## lint: Run linters
 .PHONY: lint

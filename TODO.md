@@ -1,14 +1,10 @@
 # TODO.md — lumi-go Template Build Checklist
 
-> Use this checklist to deliver the lumi-go in small, deployable phases.
-> Each phase ends with a tagged release and an AWS deployable artefact for testing.
-> Versioning plan: Phase 0 → `v0.0.1`, Phase 1 → `v0.0.2`, … Phase 10 → `v0.0.11`, Phase 11 → `v1.0.0`.
-
 ---
 
 ## Phase 0 — Foundations - **COMPLETE**
 
-- [x] Create repository with LICENSE, README, CONTRIBUTING, CODEOWNERS, SECURITY, ADR index.
+- [x] Create repository with LICENSE, README, CONTRIBUTING, SECURITY, ADR index.
 - [x] Configure branch protections (required reviews, status checks).
 - [x] Define PR templates and labels (obs, security, docs, breaking-change).
 - [x] Enable dependency, container, and secret scanning in the repo.
@@ -30,14 +26,11 @@
 
 ## Phase 2 — Observability First → Release `v0.0.3`
 
-- [ ] Wire structured logging standard (JSON, correlation fields) — documented contract.
+- [x] Wire structured logging standard (JSON, correlation fields) — documented contract.
 - [ ] Register default metrics and Prometheus scrape endpoint.
 - [ ] Configure OTLP export to local collector; define service resource attrs (name, env, version).
 - [ ] Provide a starter Grafana dashboard JSON (latency, errors, RPS placeholders).
 - [ ] Tag and publish release `v0.0.3`.
-- [ ] AWS prep: create ECR repository, dev EKS namespace, and CI OIDC/IAM role for future pushes.
-- [ ] AWS smoke: publish image to ECR; install/update Helm chart to dev with ops placeholders; verify pod runs.
-- [ ] AWS smoke: deploy to dev; confirm `/metrics` scraped by Prometheus and traces reach collector.
 
 ---
 
@@ -48,7 +41,11 @@
 - [ ] RPC front door with Connect on separate listener (interceptors: tracing, logging, auth).
 - [ ] Graceful lifecycle and shutdown with readiness flip on drain.
 - [ ] Tag and publish release `v0.0.4`.
-- [ ] AWS smoke: deploy to dev; verify `/healthz` 200, `/readyz` flips ready, and RPC stub responds.
+- [ ] AWS prep: create ECR repository, dev EKS namespace, and CI OIDC/IAM role for future pushes.
+- [ ] AWS smoke: publish image to ECR; deploy to dev.
+  - [ ] Install/update Helm chart to dev with ops placeholders; verify pod runs.
+  - [ ] Confirm `/metrics` scraped by Prometheus and traces reach collector.
+  - [ ] Verify `/healthz` 200, `/readyz` flips ready, and RPC stub responds.
 
 ---
 

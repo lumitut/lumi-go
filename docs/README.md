@@ -9,6 +9,13 @@ Welcome to the lumi-go (Go Microservice Template) documentation.
 - **[Engineering Setup](./engineering.md)** - Complete toolchain installation
 - **[Development Guide](./development.md)** - Detailed development workflow
 
+### Core Components
+- **[Observability](./observability.md)** - Logging, metrics, and tracing
+- **[Logging Contract](./logging.md)** - Structured logging standards
+- **[Database Migrations](./migrations.md)** - Schema management
+- **[Docker Setup](./docker.md)** - Container configuration
+- **[Helm Charts](./helm.md)** - Kubernetes deployment
+
 ### Reference
 - **[Tools Reference](./tools.md)** - Complete guide to all tools
 - **[Architecture Decisions](./adr/)** - ADR records
@@ -51,16 +58,24 @@ make help
 
 ```
 lumi-go/
-├── docs/                 # You are here
+├── docs/                 # All documentation (centralized)
 │   ├── quickstart.md     # Quick start guide
 │   ├── engineering.md    # Setup instructions
 │   ├── development.md    # Development workflow
 │   ├── tools.md          # Tools reference
+│   ├── observability.md  # Observability guide
+│   ├── logging.md        # Logging contract
+│   ├── migrations.md     # Database migrations
+│   ├── docker.md         # Docker setup
+│   ├── helm.md           # Helm charts
 │   └── adr/              # Architecture decisions
+├── tests/                # All tests (centralized)
+│   └── observability/    # Observability tests
+│       └── logger/       # Logger tests
 ├── cmd/server/           # Application entry point
 ├── internal/             # Business logic
 ├── api/                  # API definitions
-├── migrations/           # Database migrations
+├── migrations/           # Database schema files
 ├── deploy/               # Deployment configs
 ├── scripts/              # Utility scripts
 └── Makefile              # Build automation

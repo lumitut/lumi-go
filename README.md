@@ -39,24 +39,32 @@ A production-ready, lean Go microservice template focused on simplicity, perform
 
 ### Installation
 
-1. Clone the template:
+#### Option 1: Automated Setup (Recommended)
 ```bash
+# Clone the template
 git clone https://github.com/lumitut/lumi-go.git my-service
 cd my-service
+
+# Setup development environment (one-time)
+./scripts/local.sh setup
+
+# Start the service for development
+./scripts/local.sh start
 ```
 
-2. Install dependencies:
+#### Option 2: Manual Setup
 ```bash
+# Clone the template
+git clone https://github.com/lumitut/lumi-go.git my-service
+cd my-service
+
+# Install dependencies
 make deps
-```
 
-3. Run locally:
-```bash
+# Run locally
 make run
-```
 
-Or with hot reload:
-```bash
+# Or with hot reload
 make run-dev
 ```
 
@@ -172,6 +180,37 @@ lumi-go/
 ```
 
 ## Development
+
+### Development Script
+
+A single comprehensive development script handles all development tasks:
+
+#### `scripts/local.sh` - All-in-One Development Tool
+
+**One-time setup:**
+- `setup` - Environment setup, tool installation, dependency management
+
+**Daily development:**
+- `start`, `stop`, `restart` - Service lifecycle management  
+- `status` - Check service health
+- `logs` - Monitor service logs
+- `test` - Run test suites
+- `clean` - Clean build artifacts
+
+```bash
+# First time setup
+./scripts/local.sh setup
+
+# Daily development
+./scripts/local.sh start    # Start service in background
+./scripts/local.sh status   # Check service health
+./scripts/local.sh logs     # Tail service logs
+./scripts/local.sh test     # Run tests
+./scripts/local.sh stop     # Stop service
+
+# See all commands
+./scripts/local.sh help
+```
 
 ### Running Tests
 

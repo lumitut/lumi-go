@@ -1,199 +1,275 @@
 # Quick Start Guide
 
-Get lumi-go running in under 5 minutes.
+Get the Lumi-Go microservice up and running in 5 minutes!
 
 ## Prerequisites
 
-- Go 1.22+
-- Docker & Docker Compose
-- Make
+- Go 1.22+ installed
+- Docker (optional, for containerized deployment)
+- Make (optional, for simplified commands)
 
-Don't have these? See [engineering setup](./engineering.md).
+## Installation
 
-## 1. Clone & Setup (30 seconds)
+### 1. Clone the Repository
 
 ```bash
-# Clone repository
 git clone https://github.com/lumitut/lumi-go.git
 cd lumi-go
-
-# Install tools
-make init
 ```
 
-## 2. Start Services (2 minutes)
+### 2. Setup Development Environment
 
+#### Option A: Automated Setup (Recommended)
 ```bash
-# Start everything with one command
-make up
+# One command to setup everything
+./scripts/local.sh setup
 ```
 
-Wait for services to be healthy. You'll see:
-```
-✓ PostgreSQL is ready
-✓ Redis is ready
-✓ All services started successfully!
-```
-
-## 3. Run Application (30 seconds)
-
-Open a new terminal:
+#### Option B: Manual Setup
 ```bash
-# Run with hot-reload
+go mod download
+# or
+make deps
+```
+
+### 3. Run the Service
+
+#### Option A: Using Development Script (Recommended)
+```bash
+./scripts/local.sh start
+```
+
+#### Option B: Using Make
+```bash
 make run
 ```
 
-## 4. Verify It Works
-
+#### Option C: With Hot Reload (Development)
 ```bash
-# Check health
-curl http://localhost:8080/healthz
-# Should return: {"status":"healthy"}
+make run-dev
+# or
+air
+```
 
-# Check readiness
-curl http://localhost:8080/readyz
-# Should return: {"status":"ready"}
+#### Option D: Using Docker
+```bash
+# Build and run with Docker
+make docker-build
+make docker-run
 
-# Check metrics
+# Or using docker-compose
+docker-compose up
+```
+
+## Verify Installation
+
+### Health Check
+```bash
+curl http://localhost:8080/health
+# Expected: {"status":"healthy","timestamp":...}
+```
+
+### Readiness Check
+```bash
+curl http://localhost:8080/ready
+# Expected: {"status":"ready","time":...}
+```
+
+### Metrics
+```bash
 curl http://localhost:9090/metrics
-# Should return Prometheus metrics
+# Expected: Prometheus metrics output
 ```
 
-## 5. Explore
+## Basic Configuration
 
-| What | Where | Credentials |
-|------|-------|-------------|
-| **API Endpoints** | http://localhost:8080 | - |
-| **Metrics** | http://localhost:9090/metrics | - |
-| **Grafana Dashboards** | http://localhost:3000 | admin/admin |
-| **Jaeger Tracing** | http://localhost:16686 | - |
-| **Prometheus** | http://localhost:9091 | - |
-
-## Next Steps
-
-### Make Changes
-
-1. Edit code in `internal/`
-2. Save file
-3. Watch automatic rebuild
-4. Test your changes
-
-### Run Tests
-
+### Using Environment Variables
 ```bash
-# Quick test
-make test-short
+# Set service configuration
+export LUMI_SERVICE_NAME=my-service
+export LUMI_SERVICE_ENVIRONMENT=development
+export LUMI_SERVER_HTTPPORT=8080
 
-# Full test suite
+# Run the service
+make run
+```
+
+### Using Configuration File
+Edit `cmd/server/schema/lumi.json`:
+```json
+{
+  "service": {
+    "name": "my-service",
+    "environment": "development"
+  },
+  "server": {
+    "httpPort": "8080"
+  }
+}
+```
+
+## Adding External Services (Optional)
+
+### PostgreSQL Database
+```bash
+# Enable database client
+export LUMI_CLIENTS_DATABASE_ENABLED=true
+export LUMI_CLIENTS_DATABASE_URL=postgres://user:pass@localhost:5432/mydb
+
+# Run service
+make run
+```
+
+### Redis Cache
+```bash
+# Enable Redis client
+export LUMI_CLIENTS_REDIS_ENABLED=true
+export LUMI_CLIENTS_REDIS_URL=redis://localhost:6379/0
+
+# Run service
+make run
+```
+
+## Development Workflow
+
+### 1. Start Development Environment
+```bash
+# Start with hot reload
+make run-dev
+```
+
+### 2. Run Tests
+```bash
+# All tests
 make test
+
+# Unit tests only
+make test-unit
+
+# With coverage
+make coverage
 ```
 
-### View Logs
-
+### 3. Format and Lint
 ```bash
-# Application logs
-docker-compose logs -f app
+# Format code
+make fmt
 
-# All services
-make logs
+# Run linter
+make lint
+
+# Run go vet
+make vet
 ```
 
-### Stop Everything
-
+### 4. Build Binary
 ```bash
-make down
-```
+# Build for current platform
+make build
 
-## Common Commands
-
-| Task | Command |
-|------|---------|
-| Start services | `make up` |
-| Stop services | `make down` |
-| Run app | `make run` |
-| Run tests | `make test` |
-| View logs | `make logs` |
-| Database console | `./scripts/local.sh db` |
-| Redis console | `./scripts/local.sh redis` |
-| Clean everything | `make clean` |
-
-## Quick Debugging
-
-### Service Won't Start?
-
-```bash
-# Check Docker
-docker ps
-
-# Restart services
-make restart
-
-# Check logs
-docker-compose logs postgres
-```
-
-### Port Already Used?
-
-```bash
-# Find what's using port 8080
-lsof -i :8080
-
-# Kill it
-kill -9 <PID>
-```
-
-### Database Issues?
-
-```bash
-# Reset database
-make migrate-reset
-
-# Check connection
-psql "postgres://lumigo:lumigo@localhost:5432/lumigo?sslmode=disable" -c "SELECT 1"
+# Build for specific platform
+GOOS=linux GOARCH=amd64 make build
 ```
 
 ## Project Structure
 
 ```
 lumi-go/
-├── cmd/server/        # Application entrypoint
-├── internal/          # Business logic
-│   ├── service/       # Core services
+├── cmd/server/          # Application entrypoint
+│   ├── main.go         # Main function
+│   └── schema/         # Configuration schema
+│       └── lumi.json   # Default configuration
+├── internal/           # Private application code
+│   ├── config/        # Configuration management
 │   ├── httpapi/       # HTTP handlers
-│   └── repo/          # Data layer
-├── migrations/        # Database migrations
-├── deploy/           # Deployment configs
-└── scripts/          # Utility scripts
+│   ├── middleware/    # HTTP middleware
+│   └── observability/ # Logging, metrics, tracing
+├── api/               # API definitions
+├── tests/             # Test suites
+└── deploy/            # Deployment configurations
 ```
 
-## Development Workflow
+## Common Commands
 
-```mermaid
-graph LR
-    A[Code] --> B[Save]
-    B --> C[Auto Reload]
-    C --> D[Test]
-    D --> E{Pass?}
-    E -->|Yes| F[Commit]
-    E -->|No| A
-    F --> G[Push]
+| Command | Description |
+|---------|-------------|
+| `make run` | Run the service |
+| `make run-dev` | Run with hot reload |
+| `make test` | Run all tests |
+| `make build` | Build binary |
+| `make docker-build` | Build Docker image |
+| `make docker-run` | Run Docker container |
+| `make clean` | Clean build artifacts |
+| `make help` | Show all available commands |
+
+## API Endpoints
+
+### System Endpoints
+- `GET /health` - Health check
+- `GET /ready` - Readiness check
+- `GET /metrics` - Prometheus metrics
+
+### Application Endpoints
+Add your custom endpoints in `internal/httpapi/routes.go`:
+```go
+func registerAPIRoutes(router *gin.Engine, cfg *config.Config) {
+    api := router.Group("/api/v1")
+    {
+        api.GET("/users", getUsersHandler)
+        api.POST("/users", createUserHandler)
+        // Add more endpoints here
+    }
+}
 ```
+
+## Environment Variables
+
+Key environment variables:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `LUMI_SERVICE_NAME` | Service name | lumi-go |
+| `LUMI_SERVICE_ENVIRONMENT` | Environment (development/staging/production) | development |
+| `LUMI_SERVER_HTTPPORT` | HTTP server port | 8080 |
+| `LUMI_SERVER_RPCPORT` | gRPC server port | 8081 |
+| `LUMI_OBSERVABILITY_LOGLEVEL` | Log level | info |
+| `LUMI_OBSERVABILITY_METRICSENABLED` | Enable metrics | true |
+
+## Troubleshooting
+
+### Port Already in Use
+```bash
+# Change the port
+export LUMI_SERVER_HTTPPORT=8090
+make run
+```
+
+### Configuration Not Loading
+```bash
+# Check config file exists
+ls cmd/server/schema/lumi.json
+
+# Verify environment variables
+env | grep LUMI_
+```
+
+### Build Failures
+```bash
+# Clean and rebuild
+make clean
+go mod tidy
+make build
+```
+
+## Next Steps
+
+1. Read the [Development Guide](development.md) for detailed setup
+2. Check [External Services](external-services.md) for database/cache integration
+3. Review [Observability](observability.md) for monitoring setup
+4. See [Engineering Guide](engineering.md) for best practices
 
 ## Getting Help
 
-- 📖 [Full Documentation](./development.md)
-- 🏗️ [Architecture Guide](./architecture.md)
-- 🔧 [Engineering Setup](./engineering.md)
-- 🐛 [Troubleshooting](./troubleshooting.md)
-- 💬 [GitHub Issues](https://github.com/lumitut/lumi-go/issues)
-
-## Tips
-
-1. **Use Make targets** - They handle complexity for you
-2. **Check service health** - Use `/healthz` and `/readyz`
-3. **Watch the logs** - `make logs` is your friend
-4. **Keep it simple** - Start with `make up` and `make run`
-
----
-
-**Ready to build?** You're all set! 🚀
+- Check the [FAQ](faq.md)
+- Browse [GitHub Issues](https://github.com/lumitut/lumi-go/issues)
+- Ask in [Discussions](https://github.com/lumitut/lumi-go/discussions)

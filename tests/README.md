@@ -6,12 +6,14 @@ This directory contains all test suites for the lumi-go microservice. The tests 
 
 ```
 tests/
-├── unit/           # Unit tests for individual components
-├── integration/    # Integration tests for API endpoints
+├── unit/          # Unit tests for individual components
+├── integration/   # Integration tests for API endpoints
 ├── e2e/           # End-to-end tests for complete workflows
 ├── performance/   # Performance and load tests
+├── smoke/         # Smoke tests
 ├── fixtures/      # Test data and mocks
-└── helpers/       # Shared test utilities
+├── helpers/       # Shared test utilities
+└── setup/         # Test config
 ```
 
 ## Testing Philosophy

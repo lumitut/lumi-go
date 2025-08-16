@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package lumigo.api.v1;
+
+option go_package = "github.com/lumitut/lumi-go/api/proto/v1;v1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+// Health service for service health checks
+service HealthService {
+  // GetHealth returns the health status of the service
+  rpc GetHealth(google.protobuf.Empty) returns (HealthResponse);
+
+  // GetReadiness returns the readiness status of the service
+  rpc GetReadiness(google.protobuf.Empty) returns (ReadinessResponse);
+}
+
+// Example service - replace with your actual service
+service ExampleService {
+  // GetExample retrieves an example by ID
+  rpc GetExample(GetExampleRequest) returns (ExampleResponse);
+
+  // ListExamples retrieves a list of examples
+  rpc ListExamples(ListExamplesRequest) returns (ListExamplesResponse);
+
+  // CreateExample creates a new example
+  rpc CreateExample(CreateExampleRequest) returns (ExampleResponse);
+
+  // UpdateExample updates an existing example
+  rpc UpdateExample(UpdateExampleRequest) returns (ExampleResponse);
+
+  // DeleteExample deletes an example
+  rpc DeleteExample(DeleteExampleRequest) returns (google.protobuf.Empty);
+
+  // StreamExamples streams examples in real-time
+  rpc StreamExamples(StreamExamplesRequest) returns (stream ExampleResponse);
+}
+
+// Health response message
+message HealthResponse {
+  enum Status {
+    UNKNOWN = 0;
+    HEALTHY = 1;
+    UNHEALTHY = 2;
+  }
+
+  Status status = 1;
+  string service = 2;
+  string version = 3;
+  string environment = 4;
+  int64 timestamp = 5;
+  string uptime = 6;
+  map<string, string> details = 7;
+}
+
+// Readiness response message
+message ReadinessResponse {
+  bool ready = 1;
+  int64 timestamp = 2;
+  map<string, CheckResult> checks = 3;
+  string service = 4;
+}
+
+// Check result for readiness checks
+message CheckResult {
+  enum Status {
+    UNKNOWN = 0;
+    READY = 1;
+    NOT_READY = 2;
+  }
+
+  Status status = 1;
+  string message = 2;
+}
+
+// Example model
+message Example {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  map<string, string> metadata = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+// Get example request
+message GetExampleRequest {
+  string id = 1;
+}
+
+// List examples request
+message ListExamplesRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  string sort_by = 3;
+  string filter = 4;
+}
+
+// List examples response
+message ListExamplesResponse {
+  repeated Example items = 1;
+  int32 total = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+  bool has_more = 5;
+}
+
+// Create example request
+message CreateExampleRequest {
+  string name = 1;
+  string description = 2;
+  map<string, string> metadata = 3;
+}
+
+// Update example request
+message UpdateExampleRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  map<string, string> metadata = 4;
+}
+
+// Delete example request
+message DeleteExampleRequest {
+  string id = 1;
+}
+
+// Example response (wrapper for single example)
+message ExampleResponse {
+  Example example = 1;
+}
+
+// Stream examples request
+message StreamExamplesRequest {
+  string filter = 1;
+}
+
+// Error details for error responses
+message ErrorDetails {
+  string code = 1;
+  string message = 2;
+  map<string, string> metadata = 3;
+}

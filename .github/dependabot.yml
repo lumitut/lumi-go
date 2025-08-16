@@ -1,79 +1,67 @@
-# Dependabot configuration for lumi-go microservice template
-# Automatically creates PRs to update dependencies with security vulnerabilities
-# Reference: https://docs.github.com/en/code-security/dependabot
-
 version: 2
 updates:
-  # Go modules dependency updates
+  # Go modules
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
-      interval: "daily"
-      time: "04:00"
-      timezone: "UTC"
-    # Security updates are always created immediately regardless of schedule
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
     open-pull-requests-limit: 10
-    pull-request-branch-name:
-      separator: "-"
+    reviewers:
+      - "lumitut/engineering"
     labels:
       - "dependencies"
       - "go"
-      - "security"
-    reviewers:
-      - "@lumitut/platform-team"  # Update with your team handle
-    assignees:
-      - "@lumitut/security-team"  # Update with your team handle
     commit-message:
       prefix: "chore"
-      prefix-development: "chore"
       include: "scope"
     groups:
-      # Group minor and patch updates together
-      go-minor-patch:
+      go-dependencies:
         patterns:
           - "*"
-        update-types:
-          - "minor"
-          - "patch"
-    # Allow only security updates for these critical packages
-    allow:
-      - dependency-type: "all"
-    ignore:
-      # Add any dependencies you want to ignore here
-      # Example: - dependency-name: "github.com/example/package"
+        exclude-patterns:
+          - "go.opentelemetry.io/*"
+          - "github.com/gin-gonic/*"
 
-  # Docker base image updates
-  - package-ecosystem: "docker"
-    directory: "/deploy/docker"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "04:00"
-      timezone: "UTC"
-    labels:
-      - "dependencies"
-      - "docker"
-      - "security"
-    reviewers:
-      - "@lumitut/platform-team"  # Update with your team handle
-    commit-message:
-      prefix: "chore"
-      include: "scope"
+      opentelemetry:
+        patterns:
+          - "go.opentelemetry.io/*"
 
-  # GitHub Actions workflow updates
+      gin:
+        patterns:
+          - "github.com/gin-gonic/*"
+
+  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
-      time: "04:00"
-      timezone: "UTC"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "lumitut/engineering"
     labels:
       - "dependencies"
-      - "ci"
       - "github-actions"
-    reviewers:
-      - "@lumitut/platform-team"  # Update with your team handle
     commit-message:
       prefix: "ci"
+      include: "scope"
+
+  # Docker
+  - package-ecosystem: "docker"
+    directory: "/deploy/docker"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "lumitut/engineering"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "build"
       include: "scope"

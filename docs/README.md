@@ -1,182 +1,185 @@
-# lumi-go Documentation
+# Lumi-Go Documentation
 
-Welcome to the lumi-go (Go Microservice Template) documentation.
+Welcome to the comprehensive documentation for the Lumi-Go microservice template.
 
-## 📚 Documentation Index
+## Documentation Structure
 
 ### Getting Started
-- **[Quick Start](./quickstart.md)** - Get running in 5 minutes
-- **[Engineering Setup](./engineering.md)** - Complete toolchain installation
-- **[Development Guide](./development.md)** - Detailed development workflow
+- [**Quickstart Guide**](quickstart.md) - Get up and running in 5 minutes
+- [**Development Guide**](development.md) - Local development setup and workflows
+- [**Docker Guide**](docker.md) - Container-based development and deployment
 
-### Core Components
-- **[Observability](./observability.md)** - Logging, metrics, and tracing
-- **[Logging Contract](./logging.md)** - Structured logging standards
-- **[Metrics Guide](./metrics.md)** - Prometheus metrics and dashboards
-- **[Database Migrations](./migrations.md)** - Schema management
-- **[Docker Setup](./docker.md)** - Container configuration
-- **[Helm Charts](./helm.md)** - Kubernetes deployment
+### Architecture
+- [**Architecture Decision Records**](adr/) - Key architectural decisions
+- [**Engineering Principles**](engineering.md) - Development best practices
+- [**External Services**](external-services.md) - Integration with databases, caches, etc.
+
+### Operations
+- [**Observability**](observability.md) - Logging, metrics, and tracing
+- [**Logging Guide**](logging.md) - Structured logging practices
+- [**Metrics Guide**](metrics.md) - Prometheus metrics and monitoring
+- [**Deployment**](helm.md) - Kubernetes and Helm deployment
+
+### Development Tools
+- [**Tools Guide**](tools.md) - Required and recommended development tools
+- [**Migration Guide**](migrations.md) - Database migration management
 
 ### Reference
-- **[Tools Reference](./tools.md)** - Complete guide to all tools
-- **[Architecture Decisions](./adr/)** - ADR records
+- [**Simplification Summary**](simplification-summary.md) - Recent architecture simplification
 
-### Project Documentation
-- **[README](../README.md)** - Project overview
-- **[Contributing](../CONTRIBUTING.md)** - Contribution guidelines
-- **[Security](../SECURITY.md)** - Security policy
-- **[License](../LICENSE)** - MIT License
+## Quick Links
 
-## 🚀 Start Here
+| Resource | Description |
+|----------|-------------|
+| [API Documentation](../api/) | OpenAPI and Protocol Buffer definitions |
+| [Configuration](../cmd/server/schema/lumi.json) | Service configuration schema |
+| [Examples](../examples/) | Example implementations |
+| [Tests](../tests/) | Testing guidelines and examples |
 
-New to the project? Follow this path:
+## Architecture Overview
 
-1. **[Quick Start](./quickstart.md)** - Get the application running
-2. **[Engineering Setup](./engineering.md)** - Install all tools
-3. **[Development Guide](./development.md)** - Learn the workflow
-4. **[Tools Reference](./tools.md)** - Deep dive into tools
+```
+┌─────────────────────────────────────────────┐
+│              Load Balancer                  │
+└─────────────────┬───────────────────────────┘
+                  │
+┌─────────────────▼───────────────────────────┐
+│           Lumi-Go Service                   │
+│  ┌────────────────────────────────────┐     │
+│  │         HTTP/gRPC Server           │     │
+│  └────────────────┬───────────────────┘     │
+│                   │                         │
+│  ┌────────────────▼───────────────────┐     │
+│  │          Middleware Layer          │     │
+│  │  • Rate Limiting                   │     │
+│  │  • CORS                            │     │
+│  │  • Authentication                  │     │
+│  │  • Request Logging                 │     │
+│  └────────────────┬───────────────────┘     │
+│                   │                         │
+│  ┌────────────────▼───────────────────┐     │
+│  │         Business Logic             │     │
+│  └────────────────┬───────────────────┘     │
+│                   │                         │
+│  ┌────────────────▼───────────────────┐     │
+│  │     Optional External Clients      │     │
+│  │  • Database (PostgreSQL)           │     │
+│  │  • Cache (Redis)                   │     │
+│  │  • Message Queue                   │     │
+│  └────────────────────────────────────┘     │
+└─────────────────────────────────────────────┘
+```
 
-## 🛠️ Key Commands
+## Key Features
 
+- **Lean Architecture**: Minimal dependencies, maximum performance
+- **Cloud-Native**: Designed for Kubernetes and containerized environments
+- **Observable**: Built-in metrics, structured logging, distributed tracing
+- **Configurable**: JSON + environment variable configuration
+- **Testable**: Comprehensive testing support with mocks and fixtures
+- **Secure**: Security scanning, rate limiting, CORS support
+
+## Configuration Priority
+
+1. **Environment Variables** (highest priority)
+2. **Configuration File** (`lumi.json`)
+3. **Built-in Defaults** (lowest priority)
+
+Example:
 ```bash
-# Verify your setup
-./scripts/verify-setup.sh
-
-# Start everything
-make up
-
-# Run application
-make run
-
-# Run tests
-make test
-
-# View help
-make help
+# Override configuration with environment variables
+export LUMI_SERVICE_NAME=my-service
+export LUMI_SERVER_HTTPPORT=8080
+export LUMI_CLIENTS_DATABASE_URL=postgres://localhost:5432/db
 ```
 
-## 📂 Project Structure
+## External Services
 
-```
-lumi-go/
-├── docs/                 # All documentation (centralized)
-│   ├── quickstart.md     # Quick start guide
-│   ├── engineering.md    # Setup instructions
-│   ├── development.md    # Development workflow
-│   ├── tools.md          # Tools reference
-│   ├── observability.md  # Observability guide
-│   ├── logging.md        # Logging contract
-│   ├── migrations.md     # Database migrations
-│   ├── docker.md         # Docker setup
-│   ├── helm.md           # Helm charts
-│   └── adr/              # Architecture decisions
-├── tests/                # All tests (centralized)
-│   └── observability/    # Observability tests
-│       └── logger/       # Logger tests
-├── cmd/server/           # Application entry point
-├── internal/             # Business logic
-├── api/                  # API definitions
-├── migrations/           # Database schema files
-├── deploy/               # Deployment configs
-├── scripts/              # Utility scripts
-└── Makefile              # Build automation
+External services are **optional** and configured as clients:
+
+```json
+{
+  "clients": {
+    "database": {
+      "enabled": true,
+      "url": "postgres://localhost:5432/mydb"
+    },
+    "redis": {
+      "enabled": false,
+      "url": ""
+    }
+  }
+}
 ```
 
-## 🔧 Tool Versions
-
-| Tool | Required Version |
-|------|-----------------|
-| Go | 1.22+ |
-| Docker | 24.0+ |
-| Docker Compose | 2.23+ |
-| kubectl | 1.28+ |
-| Helm | 3.13+ |
-
-See [engineering.md](./engineering.md) for complete list.
-
-## 📊 Service Endpoints
-
-| Service | URL | Purpose |
-|---------|-----|---------|
-| API | http://localhost:8080 | Main application |
-| gRPC | http://localhost:8081 | RPC endpoints |
-| Metrics | http://localhost:9090/metrics | Prometheus metrics |
-| Grafana | http://localhost:3000 | Dashboards (admin/admin) |
-| Jaeger | http://localhost:16686 | Distributed tracing |
-
-## 🏗️ Architecture Overview
-
-```mermaid
-graph TB
-    Client[App] --> LB[Load Balancer]
-    Client[Site] --> LB
-    LB --> API[BFF API Gateway]
-    API --> MS[lumi-Go Microservice]
-    MS --> DB[(PostgreSQL)]
-    MS --> Cache[(Redis)]
-    MS --> Queue[Message Queue]
-    MS --> OTEL[OpenTelemetry]
-    OTEL --> Jaeger[Jaeger]
-    OTEL --> Prom[Prometheus]
-    Prom --> Grafana[Grafana]
-```
-
-## 🧪 Testing Strategy
-
-- **Unit Tests** - Business logic validation
-- **Integration Tests** - Component interaction
-- **E2E Tests** - Full workflow validation
-- **Performance Tests** - Load and stress testing
-- **Security Tests** - Vulnerability scanning
-
-## 🔒 Security
-
-- JWT-based authentication
-- Role-based access control (RBAC)
-- Rate limiting
-- Input validation
-- Secret scanning
-- Container scanning
-- Dependency scanning
-
-See [Security Policy](../SECURITY.md) for details.
-
-## 📈 Observability
+## Observability
 
 ### Metrics
-- Request rate, error rate, duration (RED)
-- CPU, memory, disk, network usage
-- Business metrics
+- Exposed at `/metrics` endpoint
+- Prometheus-compatible format
+- HTTP request metrics
+- Custom business metrics
 
 ### Logging
 - Structured JSON logging
-- Correlation IDs
-- Log aggregation
+- Correlation IDs for request tracing
+- Log levels: debug, info, warn, error
+- PII redaction support
 
 ### Tracing
-- Distributed tracing with OpenTelemetry
-- Span correlation
-- Performance insights
+- OpenTelemetry support
+- Optional integration with Jaeger/Zipkin
+- Automatic span creation for HTTP/gRPC
 
-## 🤝 Contributing
+## Testing
 
-See [Contributing Guide](../CONTRIBUTING.md) for:
-- Code style guidelines
-- Commit conventions
-- PR process
-- Testing requirements
+```bash
+# Run all tests
+make test
 
-## 📞 Support
+# Unit tests only
+make test-unit
 
-- **Documentation:** This directory
-- **Issues:** [GitHub Issues](https://github.com/lumitut/lumi-go/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/lumitut/lumi-go/discussions)
-- **Email:** platform@lumitut.com
+# Integration tests
+make test-integration
 
-## 📝 License
+# Generate coverage report
+make coverage
+```
 
-This project is licensed under the MIT License - see [LICENSE](../LICENSE) file.
+## Deployment
 
----
+### Docker
+```bash
+# Build image
+make docker-build
 
-**Need help?** Start with the [Quick Start Guide](./quickstart.md) or run `make help`.
+# Run container
+docker run -p 8080:8080 lumitut/lumi-go:latest
+```
+
+### Kubernetes
+```bash
+# Using Helm
+helm install lumi-go ./deploy/helm
+
+# Using kubectl
+kubectl apply -f ./deploy/k8s/
+```
+
+## Contributing
+
+1. Read the [Engineering Guide](engineering.md)
+2. Follow the [Development Setup](development.md)
+3. Check [Architecture Decision Records](adr/)
+4. Submit PR following the template
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/lumitut/lumi-go/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/lumitut/lumi-go/discussions)
+- **Security**: See [SECURITY.md](../SECURITY.md)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.

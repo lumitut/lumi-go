@@ -7,21 +7,20 @@
 - [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
 - [ ] ✨ New feature (non-breaking change which adds functionality)
 - [ ] 💥 Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] 📚 Documentation update
-- [ ] 🔒 Security fix
+- [ ] 📝 Documentation update
+- [ ] 🎨 Code style/refactoring
 - [ ] ⚡ Performance improvement
-- [ ] ♻️ Code refactoring
 - [ ] 🔧 Configuration change
-- [ ] 📦 Dependency update
-- [ ] 🏗️ Infrastructure change
+- [ ] 🧪 Test improvement
+- [ ] 🔒 Security fix
 
-## Related Issues
-<!-- Link to related issues (e.g., Fixes #123, Closes #456) -->
+## Related Issue
+<!-- Link to the related issue (e.g., Fixes #123, Closes #456) -->
 
 Fixes #
 
 ## Changes Made
-<!-- List the main changes made in this PR -->
+<!-- List the specific changes made in this PR -->
 
 - 
 - 
@@ -30,18 +29,15 @@ Fixes #
 ## Testing
 <!-- Describe the tests you ran to verify your changes -->
 
+- [ ] Unit tests pass (`make test-unit`)
+- [ ] Integration tests pass (`make test-integration`)
+- [ ] Linting passes (`make lint`)
+- [ ] Local testing completed
+
 ### Test Coverage
-- [ ] Unit tests pass
-- [ ] Integration tests pass
-- [ ] Manual testing completed
-- [ ] Performance tests (if applicable)
-- [ ] Security scan passed
-
-### Test Evidence
-<!-- Provide evidence of testing (screenshots, logs, metrics) if applicable -->
-
-```bash
-# Test command output
+<!-- Include test coverage if applicable -->
+```
+Current coverage: XX%
 ```
 
 ## Checklist
@@ -52,64 +48,49 @@ Fixes #
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] My changes generate no new warnings or errors
-- [ ] I have run `make fmt` and `make lint`
-- [ ] I have run `make test` with race detection enabled
+- [ ] I have added tests that prove my fix is effective or that my feature works
+- [ ] New and existing unit tests pass locally with my changes
 
 ### Documentation
-- [ ] I have updated the documentation accordingly
 - [ ] I have updated the README if needed
-- [ ] I have added/updated ADRs for significant decisions
-- [ ] I have updated OpenAPI/Proto specs if applicable
+- [ ] I have updated API documentation if applicable
+- [ ] I have added/updated code comments where necessary
+- [ ] I have updated CHANGELOG.md if applicable
 
-### Security
-- [ ] I have checked for security vulnerabilities (`make security-scan`)
-- [ ] No secrets or sensitive data are exposed
-- [ ] Dependencies are up to date and secure
-- [ ] I have followed secure coding practices
+### Configuration
+- [ ] I have updated `cmd/server/schema/lumi.json` if adding new config options
+- [ ] I have updated `env.example` if adding new environment variables
+- [ ] Configuration changes are backward compatible
 
-### Observability
-- [ ] Appropriate logging has been added
-- [ ] Metrics have been added/updated if applicable
-- [ ] Tracing spans are properly configured
-- [ ] Error handling includes proper context
+### Dependencies
+- [ ] I have run `go mod tidy` if dependencies changed
+- [ ] No unnecessary dependencies were added
+- [ ] Security scan passes for new dependencies
 
-## Deployment Notes
-<!-- Any special deployment considerations or migration steps -->
+### Performance
+- [ ] My changes don't negatively impact performance
+- [ ] I have run benchmarks if applicable
 
-- [ ] Database migrations required
-- [ ] Configuration changes required
-- [ ] Feature flag updates needed
-- [ ] Backward compatibility maintained
+## Screenshots/Logs
+<!-- If applicable, add screenshots or logs to help explain your changes -->
 
-## Performance Impact
-<!-- Describe any performance implications -->
+## Additional Notes
+<!-- Add any additional notes or context about the PR here -->
 
-- [ ] No performance impact expected
-- [ ] Performance improvement expected
-- [ ] Potential performance degradation (explain mitigation)
+## Reviewer Guidelines
+<!-- Help reviewers understand what to focus on -->
 
-## Breaking Changes
-<!-- If this PR includes breaking changes, describe them and the migration path -->
-
-### Breaking Change Description
-<!-- What will break and why -->
-
-### Migration Guide
-<!-- How to migrate from the old behavior to the new -->
-
-## Screenshots/Recordings
-<!-- If applicable, add screenshots or recordings to help explain your changes -->
-
-## Additional Context
-<!-- Add any other context about the PR here -->
-
-## Reviewer Notes
-<!-- Specific areas you'd like reviewers to focus on -->
+Please pay special attention to:
+- [ ] Error handling
+- [ ] Resource cleanup (defer statements)
+- [ ] Concurrent access safety
+- [ ] Configuration validation
+- [ ] Test coverage
 
 ---
-
-**Post-merge actions:**
-- [ ] Update release notes
-- [ ] Notify affected teams
-- [ ] Update monitoring/alerts
-- [ ] Schedule follow-up tasks
+**PR Readiness Checklist for Reviewers:**
+- [ ] Code is clean and follows Go best practices
+- [ ] Tests are comprehensive and pass
+- [ ] Documentation is updated
+- [ ] No security vulnerabilities introduced
+- [ ] Performance impact is acceptable

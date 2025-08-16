@@ -1,92 +1,101 @@
 ---
-name: 🐛 Bug Report
-about: Report a bug or unexpected behavior
+name: Bug Report
+about: Report a bug in the lumi-go microservice
 title: '[BUG] '
-labels: bug, triage
+labels: 'bug, needs-triage'
 assignees: ''
 ---
 
 ## Bug Description
-<!-- A clear and concise description of what the bug is -->
+<!-- Provide a clear and concise description of the bug -->
 
 ## Environment
+<!-- Please complete the following information -->
 
-- **Service Version:** <!-- e.g., v1.2.3 or commit hash -->
-- **Go Version:** <!-- e.g., 1.22 -->
-- **Operating System:** <!-- e.g., Ubuntu 22.04, macOS 14.0 -->
-- **Container Runtime:** <!-- e.g., Docker 24.0, containerd 1.7 -->
-- **Kubernetes Version:** <!-- if applicable -->
-- **Cloud Provider:** <!-- e.g., AWS, GCP, Azure, on-premise -->
+- **OS**: [e.g., Ubuntu 22.04, macOS 14.0, Windows 11]
+- **Go Version**: [e.g., 1.22.0]
+- **Service Version/Commit**: [e.g., v1.0.0 or commit hash]
+- **Deployment Method**: [e.g., Docker, Kubernetes, Binary]
 
 ## Steps to Reproduce
-<!-- Steps to reproduce the behavior -->
+<!-- Provide detailed steps to reproduce the behavior -->
 
-1. Configure service with...
-2. Send request to...
-3. Observe...
-4. See error
+1. Start the service with configuration: `...`
+2. Send request to endpoint: `...`
+3. Observe error: `...`
 
 ## Expected Behavior
-<!-- A clear description of what you expected to happen -->
+<!-- Describe what you expected to happen -->
 
 ## Actual Behavior
-<!-- What actually happened -->
+<!-- Describe what actually happened -->
 
-## Error Messages/Logs
-<!-- Include relevant error messages, stack traces, or logs -->
+## Configuration
+<!-- Include relevant configuration (remove sensitive data) -->
+
+```json
+{
+  "service": {
+    "name": "lumi-go",
+    "environment": "development"
+  },
+  "clients": {
+    "database": {
+      "enabled": false
+    }
+  }
+  // ... relevant config
+}
+```
+
+## Logs
+<!-- Include relevant log output -->
 
 ```
-# Error output
+[timestamp] ERROR [correlation_id] Error message here
+...
 ```
 
-<details>
-<summary>Full logs</summary>
+## Stack Trace
+<!-- If applicable, include the full stack trace -->
 
 ```
-# Paste full logs here
+panic: runtime error...
+goroutine 1 [running]:
+...
 ```
-
-</details>
 
 ## Request/Response Examples
-<!-- If applicable, provide example requests and responses -->
+<!-- If it's an API issue, provide request and response examples -->
 
 ### Request
 ```bash
-curl -X POST http://localhost:8080/v1/endpoint \
+curl -X POST http://localhost:8080/api/endpoint \
   -H "Content-Type: application/json" \
-  -d '{"example": "data"}'
+  -d '{"key": "value"}'
 ```
 
 ### Response
 ```json
 {
-  "error": "example error"
+  "error": "error message",
+  "code": 500
 }
 ```
-
-## Impact
-<!-- Describe the impact of this bug -->
-
-- [ ] 🔴 Critical - Service is down or data loss occurring
-- [ ] 🟠 High - Major feature broken, no workaround
-- [ ] 🟡 Medium - Feature broken, workaround available
-- [ ] 🟢 Low - Minor issue, cosmetic
-
-## Possible Solution
-<!-- If you have suggestions on how to fix the bug -->
 
 ## Additional Context
 <!-- Add any other context about the problem here -->
 
-### Screenshots
-<!-- If applicable, add screenshots to help explain your problem -->
+## Possible Solution
+<!-- If you have ideas on how to fix this, please share -->
 
-### Related Issues
-<!-- Link to related issues if any -->
+## Workaround
+<!-- If you found a workaround, please describe it to help others -->
 
-## Checklist
-- [ ] I have searched existing issues to ensure this isn't a duplicate
-- [ ] I have included all relevant information
-- [ ] I have provided steps to reproduce the issue
-- [ ] I have included relevant logs and error messages
+---
+**For Maintainers:**
+- [ ] Bug confirmed
+- [ ] Root cause identified
+- [ ] Test case added
+- [ ] Fix implemented
+- [ ] Documentation updated if needed

@@ -1,548 +1,661 @@
-# Development Environment Guide
+# Development Guide
 
-This guide walks you through setting up and working with the lumi-go development environment.
+Comprehensive guide for developing with the Lumi-Go microservice template.
+
+## Table of Contents
+- [Prerequisites](#prerequisites)
+- [Initial Setup](#initial-setup)
+- [Development Workflow](#development-workflow)
+- [Code Organization](#code-organization)
+- [Testing](#testing)
+- [Debugging](#debugging)
+- [Performance](#performance)
+- [Best Practices](#best-practices)
 
 ## Prerequisites
 
-Before starting, ensure you have completed the [engineering setup](./engineering.md).
+### Required Tools
+- **Go**: Version 1.22 or higher
+- **Git**: For version control
+- **Make**: For running build commands
+
+### Recommended Tools
+- **Docker**: For containerized development
+- **Air**: For hot reload during development
+- **golangci-lint**: For code linting
+- **Delve**: For debugging
+
+### Installation
+
+#### macOS
+```bash
+# Install Go
+brew install go
+
+# Install development tools
+brew install make git docker
+
+# Install Go tools
+go install github.com/air-verse/air@latest
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+go install github.com/go-delve/delve/cmd/dlv@latest
+```
+
+#### Linux
+```bash
+# Install Go (Ubuntu/Debian)
+sudo apt update
+sudo apt install golang-go make git
+
+# Install Docker
+curl -fsSL https://get.docker.com | sh
+
+# Install Go tools
+go install github.com/air-verse/air@latest
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+go install github.com/go-delve/delve/cmd/dlv@latest
+```
+
+#### Windows
+```powershell
+# Install with Chocolatey
+choco install golang make git docker-desktop
+
+# Install Go tools
+go install github.com/air-verse/air@latest
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+go install github.com/go-delve/delve/cmd/dlv@latest
+```
 
 ## Initial Setup
 
 ### 1. Clone Repository
-
 ```bash
 git clone https://github.com/lumitut/lumi-go.git
 cd lumi-go
 ```
 
 ### 2. Install Dependencies
-
 ```bash
-# Install Go dependencies
+# Download Go modules
 go mod download
 
-# Install development tools
-make init
+# Verify dependencies
+go mod verify
+
+# Tidy dependencies
+go mod tidy
 ```
 
-### 3. Configure Environment
-
+### 3. Setup Environment
 ```bash
-# Copy environment template
-cp .env.example .env
+# Copy example environment file
+cp env.example .env
 
-# Edit .env with your settings
-# Key variables to configure:
-# - DATABASE_URL
-# - REDIS_URL
-# - OTEL_EXPORTER_OTLP_ENDPOINT
+# Edit .env with your configuration
+vim .env
 ```
 
-## Local Development Stack
-
-### Starting Services
-
+### 4. Install Development Tools
 ```bash
-# Start all services (recommended)
-make up
-
-# Or use the local script for more control
-./scripts/local.sh start
-
-# Start specific services
-docker-compose up -d postgres redis
+make install-tools
 ```
 
-### Service URLs
+## Development Workflow
 
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| API | http://localhost:8080 | - |
-| gRPC | http://localhost:8081 | - |
-| Metrics | http://localhost:9090/metrics | - |
-| Prometheus | http://localhost:9091 | - |
-| Grafana | http://localhost:3000 | admin/admin |
-| Jaeger | http://localhost:16686 | - |
-| PostgreSQL | localhost:5432 | lumigo/lumigo |
-| Redis | localhost:6379 | - |
+### Starting Development
 
-### Stopping Services
-
+#### 1. Hot Reload Mode
+Best for active development:
 ```bash
-# Stop all services
-make down
+# Using Make
+make run-dev
 
-# Stop and clean volumes
-./scripts/local.sh clean
-```
+# Using Air directly
+air
 
-## Running the Application
-
-### Development Mode (Hot Reload)
-
-```bash
-# Run with hot reload
-make run
-
-# Or directly with air
+# With custom config
 air -c .air.toml
 ```
 
-### Debug Mode
-
+#### 2. Standard Run
+For testing without hot reload:
 ```bash
-# Run with Delve debugger
-dlv debug ./cmd/server -- serve
+# Using Make
+make run
 
-# Attach to running process
-dlv attach $(pgrep lumi-go)
+# Using Go directly
+go run cmd/server/main.go
+
+# With specific config
+go run cmd/server/main.go -config=config.json
 ```
 
-### Production Mode
-
+#### 3. Docker Development
+For containerized development:
 ```bash
-# Build binary
-make build
+# Start development container
+docker-compose -f docker-compose.dev.yml up
 
-# Run binary
-./bin/lumi-go serve
+# Rebuild on changes
+docker-compose -f docker-compose.dev.yml up --build
 ```
 
-## Database Management
+### Code Formatting
 
-### Running Migrations
-
+Always format code before committing:
 ```bash
-# Run all pending migrations
-make migrate-up
-
-# Rollback last migration
-make migrate-down
-
-# Reset database
-make migrate-reset
-
-# Check current version
-make migrate-version
-```
-
-### Creating Migrations
-
-```bash
-# Create new migration
-make migrate-create
-
-# Or manually
-migrate create -ext sql -dir migrations -seq your_migration_name
-```
-
-### Database Console
-
-```bash
-# Connect to PostgreSQL
-./scripts/local.sh db
-
-# Or directly
-docker-compose exec postgres psql -U lumigo -d lumigo
-```
-
-### Seeding Data
-
-```bash
-# Run seed script
-docker-compose exec -T postgres psql -U lumigo -d lumigo < scripts/seed.sql
-```
-
-## Testing
-
-### Unit Tests
-
-```bash
-# Run all tests
-make test
-
-# Run with coverage
-make coverage
-
-# Run specific package
-go test ./internal/service/...
-
-# Run with race detection
-go test -race ./...
-```
-
-### Integration Tests
-
-```bash
-# Run integration tests
-make test-integration
-
-# Run specific integration test
-go test -tags=integration ./internal/repo -run TestUserRepo
-```
-
-### Benchmarks
-
-```bash
-# Run all benchmarks
-make benchmark
-
-# Run specific benchmark
-go test -bench=BenchmarkUserService ./internal/service
-```
-
-## Code Quality
-
-### Formatting
-
-```bash
-# Format all code
+# Format all Go files
 make fmt
 
-# Check formatting
-gofmt -l .
+# Or use gofmt directly
+gofmt -w -s .
+
+# Use goimports for import organization
+goimports -w .
 ```
 
 ### Linting
 
+Run linters to catch issues:
 ```bash
-# Run all linters
+# Run golangci-lint
 make lint
 
-# Run specific linter
-golangci-lint run --enable=gocyclo ./...
+# Run go vet
+make vet
+
+# Run all checks
+make ci
 ```
 
-### Security Scanning
+### Testing During Development
 
+#### Run Tests Continuously
 ```bash
-# Run security scans
-make security-scan
+# Watch mode (requires entr)
+find . -name '*.go' | entr -c go test ./...
 
-# Individual tools
-govulncheck ./...
-gosec ./...
-gitleaks detect
+# Or use a test watcher
+go install github.com/onsi/ginkgo/v2/ginkgo@latest
+ginkgo watch ./...
 ```
 
-## Code Generation
-
-### Protocol Buffers
-
+#### Run Specific Tests
 ```bash
-# Generate from proto files
-buf generate
+# Test specific package
+go test ./internal/config/...
 
-# Lint proto files
-buf lint
+# Run specific test
+go test -run TestConfig ./internal/config/
+
+# Verbose output
+go test -v ./...
+
+# With race detection
+go test -race ./...
 ```
 
-### SQL Code Generation
+## Code Organization
 
-```bash
-# Generate from SQL queries
-sqlc generate
-
-# Verify generation
-sqlc compile
+### Directory Structure
+```
+lumi-go/
+├── cmd/server/           # Application entrypoint
+│   ├── main.go          # Main function
+│   └── schema/          # Configuration files
+├── internal/            # Private application code
+│   ├── config/         # Configuration management
+│   ├── httpapi/        # HTTP handlers and routes
+│   ├── rpcapi/         # gRPC handlers
+│   ├── service/        # Business logic
+│   ├── domain/         # Domain models
+│   ├── middleware/     # HTTP/gRPC middleware
+│   ├── observability/  # Logging, metrics, tracing
+│   └── clients/        # External service clients
+├── api/                # API definitions
+│   ├── openapi/       # OpenAPI specifications
+│   └── proto/         # Protocol buffers
+├── tests/             # Test suites
+│   ├── unit/         # Unit tests
+│   ├── integration/  # Integration tests
+│   ├── e2e/         # End-to-end tests
+│   └── fixtures/    # Test data
+└── docs/             # Documentation
 ```
 
-### Mocks
+### Adding New Features
 
+#### 1. Create Domain Model
+```go
+// internal/domain/user.go
+package domain
+
+type User struct {
+    ID        string    `json:"id"`
+    Name      string    `json:"name"`
+    Email     string    `json:"email"`
+    CreatedAt time.Time `json:"created_at"`
+}
+```
+
+#### 2. Implement Service Layer
+```go
+// internal/service/user_service.go
+package service
+
+type UserService struct {
+    // Add dependencies
+}
+
+func NewUserService() *UserService {
+    return &UserService{}
+}
+
+func (s *UserService) GetUser(ctx context.Context, id string) (*domain.User, error) {
+    // Implementation
+}
+```
+
+#### 3. Add HTTP Handler
+```go
+// internal/httpapi/user_handler.go
+package httpapi
+
+func (s *Server) getUserHandler(c *gin.Context) {
+    userID := c.Param("id")
+    
+    user, err := s.userService.GetUser(c.Request.Context(), userID)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+        return
+    }
+    
+    c.JSON(http.StatusOK, user)
+}
+```
+
+#### 4. Register Route
+```go
+// internal/httpapi/routes.go
+func registerAPIRoutes(router *gin.Engine, cfg *config.Config) {
+    api := router.Group("/api/v1")
+    {
+        api.GET("/users/:id", s.getUserHandler)
+    }
+}
+```
+
+#### 5. Write Tests
+```go
+// tests/unit/service/user_service_test.go
+func TestUserService_GetUser(t *testing.T) {
+    service := NewUserService()
+    
+    user, err := service.GetUser(context.Background(), "123")
+    
+    assert.NoError(t, err)
+    assert.Equal(t, "123", user.ID)
+}
+```
+
+## Testing
+
+### Test Organization
+- **Unit Tests**: Test individual functions/methods
+- **Integration Tests**: Test component interactions
+- **E2E Tests**: Test complete workflows
+
+### Writing Tests
+
+#### Unit Test Example
+```go
+package config_test
+
+import (
+    "testing"
+    "github.com/stretchr/testify/assert"
+)
+
+func TestConfig_Validate(t *testing.T) {
+    tests := []struct {
+        name    string
+        config  Config
+        wantErr bool
+    }{
+        {
+            name:    "valid config",
+            config:  Config{Service: ServiceConfig{Name: "test"}},
+            wantErr: false,
+        },
+        {
+            name:    "invalid config",
+            config:  Config{},
+            wantErr: true,
+        },
+    }
+    
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            err := tt.config.Validate()
+            if tt.wantErr {
+                assert.Error(t, err)
+            } else {
+                assert.NoError(t, err)
+            }
+        })
+    }
+}
+```
+
+### Running Tests
 ```bash
-# Generate all mocks
-go generate ./...
+# All tests
+make test
 
-# Generate specific mock
-mockery --name=UserService --dir=internal/service
+# With coverage
+make coverage
+
+# Specific package
+go test ./internal/config/...
+
+# With race detection
+go test -race ./...
+
+# Benchmark tests
+make bench
 ```
 
 ## Debugging
 
-### Application Logs
+### Using Delve
 
+#### 1. Debug the Application
 ```bash
-# View application logs
-docker-compose logs -f app
-
-# View all logs
-make logs
-
-# Filter logs
-docker-compose logs app | grep ERROR
-```
-
-### Debugging with Delve
-
-```bash
-# Start with debugger
-dlv debug ./cmd/server -- serve
+# Start debugger
+dlv debug cmd/server/main.go
 
 # Set breakpoint
-(dlv) break internal/service/user.go:45
+(dlv) break main.main
 
 # Continue execution
 (dlv) continue
 
 # Print variable
-(dlv) print user
+(dlv) print cfg
 
-# Stack trace
-(dlv) stack
+# Step through code
+(dlv) next
+(dlv) step
 ```
 
-### Performance Profiling
-
+#### 2. Debug Tests
 ```bash
-# CPU profiling
-go test -cpuprofile=cpu.prof -bench=.
-go tool pprof cpu.prof
+# Debug specific test
+dlv test ./internal/config -- -test.run TestConfig
 
-# Memory profiling
-go test -memprofile=mem.prof -bench=.
-go tool pprof mem.prof
-
-# Live profiling
-go tool pprof http://localhost:9090/debug/pprof/profile
+# With breakpoint
+(dlv) break config.Load
+(dlv) continue
 ```
 
-## Docker Development
+### Using VS Code
 
-### Building Images
-
-```bash
-# Build development image
-docker build -f deploy/docker/Dockerfile.dev -t lumi-go:dev .
-
-# Build production image
-make docker-build
+`.vscode/launch.json`:
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Server",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/server",
+            "env": {
+                "LUMI_SERVICE_ENVIRONMENT": "development"
+            }
+        },
+        {
+            "name": "Debug Test",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}/tests/unit/..."
+        }
+    ]
+}
 ```
 
-### Running Containers
+### Logging for Debugging
+```go
+import "github.com/lumitut/lumi-go/internal/observability/logger"
 
+// Add debug logs
+logger.Debug(ctx, "Processing request", 
+    zap.String("user_id", userID),
+    zap.Any("payload", payload))
+
+// Conditional debug logging
+if cfg.Service.Environment == "development" {
+    logger.Debug(ctx, "Detailed debug info", zap.Any("data", data))
+}
+```
+
+## Performance
+
+### Profiling
+
+#### CPU Profiling
 ```bash
-# Run development container
-docker run -v $(pwd):/app -p 8080:8080 lumi-go:dev
+# Enable pprof
+export LUMI_SERVER_ENABLEPPROF=true
 
-# Run production container
-make docker-run
+# Start service
+make run
+
+# Capture CPU profile
+go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30
+
+# Analyze
+(pprof) top
+(pprof) list main.main
+(pprof) web
+```
+
+#### Memory Profiling
+```bash
+# Capture memory profile
+go tool pprof http://localhost:6060/debug/pprof/heap
+
+# Analyze allocations
+(pprof) alloc_objects
+(pprof) inuse_objects
+```
+
+### Benchmarking
+```go
+// Write benchmark
+func BenchmarkUserService(b *testing.B) {
+    service := NewUserService()
+    
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        service.GetUser(context.Background(), "123")
+    }
+}
+
+// Run benchmark
+go test -bench=. -benchmem -benchtime=10s ./...
+```
+
+### Load Testing
+```bash
+# Install hey
+go install github.com/rakyll/hey@latest
+
+# Run load test
+hey -n 10000 -c 100 http://localhost:8080/api/users
+
+# With custom headers
+hey -n 1000 -c 10 -H "Authorization: Bearer token" http://localhost:8080/api/users
+```
+
+## Best Practices
+
+### 1. Error Handling
+```go
+// Always wrap errors with context
+if err != nil {
+    return fmt.Errorf("failed to get user %s: %w", userID, err)
+}
+
+// Use custom error types
+type NotFoundError struct {
+    Resource string
+    ID       string
+}
+
+func (e NotFoundError) Error() string {
+    return fmt.Sprintf("%s with ID %s not found", e.Resource, e.ID)
+}
+```
+
+### 2. Context Usage
+```go
+// Always accept context as first parameter
+func GetUser(ctx context.Context, id string) (*User, error) {
+    // Use context for cancellation
+    select {
+    case <-ctx.Done():
+        return nil, ctx.Err()
+    default:
+        // Continue processing
+    }
+}
+```
+
+### 3. Dependency Injection
+```go
+// Use interfaces for dependencies
+type UserRepository interface {
+    GetUser(ctx context.Context, id string) (*User, error)
+}
+
+type UserService struct {
+    repo UserRepository
+}
+
+func NewUserService(repo UserRepository) *UserService {
+    return &UserService{repo: repo}
+}
+```
+
+### 4. Configuration Management
+```go
+// Use structured configuration
+type Config struct {
+    Service ServiceConfig `json:"service"`
+    Server  ServerConfig  `json:"server"`
+}
+
+// Validate configuration
+func (c *Config) Validate() error {
+    if c.Service.Name == "" {
+        return errors.New("service name is required")
+    }
+    return nil
+}
+```
+
+### 5. Logging
+```go
+// Use structured logging
+logger.Info(ctx, "User created",
+    zap.String("user_id", user.ID),
+    zap.String("email", user.Email),
+    zap.Time("created_at", user.CreatedAt))
+
+// Add correlation IDs
+ctx = context.WithValue(ctx, "correlation_id", uuid.New().String())
 ```
 
 ## Git Workflow
 
 ### Branch Strategy
-
 ```bash
 # Create feature branch
-git checkout -b feature/your-feature
+git checkout -b feature/user-service
 
-# Create bugfix branch
-git checkout -b bugfix/your-fix
+# Make changes and commit
+git add .
+git commit -m "feat: add user service"
 
-# Create hotfix branch
-git checkout -b hotfix/critical-fix
+# Push to remote
+git push origin feature/user-service
+
+# Create pull request
 ```
 
-### Commit Convention
-
-```bash
-# Format: <type>(<scope>): <subject>
-
-# Examples:
-git commit -m "feat(auth): add JWT refresh token support"
-git commit -m "fix(db): resolve connection pool leak"
-git commit -m "docs(api): update OpenAPI specification"
-git commit -m "chore(deps): update Go modules"
-```
+### Commit Messages
+Follow conventional commits:
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation
+- `style:` Code style
+- `refactor:` Code refactoring
+- `test:` Testing
+- `chore:` Maintenance
 
 ### Pre-commit Hooks
-
 ```bash
-# Install pre-commit hooks
-make pre-commit
+# Install pre-commit
+pip install pre-commit
+
+# Install hooks
+pre-commit install
 
 # Run manually
 pre-commit run --all-files
-
-# Skip hooks (emergency only)
-git commit --no-verify
 ```
-
-## Environment Variables
-
-### Development Defaults
-
-```bash
-ENV=dev
-LOG_LEVEL=debug
-GIN_MODE=debug
-HTTP_ADDR=:8080
-RPC_ADDR=:8081
-PROM_ADDR=:9090
-PG_URL=postgres://lumigo:lumigo@localhost:5432/lumigo?sslmode=disable
-REDIS_URL=redis://localhost:6379/0
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
-```
-
-### Testing Environment
-
-```bash
-ENV=test
-LOG_LEVEL=error
-GIN_MODE=test
-PG_URL=postgres://test:test@localhost:5432/test?sslmode=disable
-```
-
-## IDE Configuration
-
-### VS Code
-
-Launch configuration (`.vscode/launch.json`):
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Debug Server",
-      "type": "go",
-      "request": "launch",
-      "mode": "debug",
-      "program": "${workspaceFolder}/cmd/server",
-      "args": ["serve"],
-      "env": {
-        "ENV": "dev",
-        "LOG_LEVEL": "debug"
-      }
-    }
-  ]
-}
-```
-
-### GoLand
-
-Run configuration:
-1. Go to Run → Edit Configurations
-2. Add Go Build configuration
-3. Set package path: `./cmd/server`
-4. Set program arguments: `serve`
-5. Set environment variables from `.env`
 
 ## Troubleshooting
 
-### Port Already in Use
+### Common Issues
 
+#### Module Download Failures
+```bash
+# Clear module cache
+go clean -modcache
+
+# Re-download
+go mod download
+```
+
+#### Port Already in Use
 ```bash
 # Find process using port
 lsof -i :8080
 
 # Kill process
 kill -9 <PID>
+
+# Or use different port
+export LUMI_SERVER_HTTPPORT=8090
 ```
 
-### Docker Issues
-
+#### Build Failures
 ```bash
-# Clean Docker system
-docker system prune -a
+# Clean build cache
+go clean -cache
 
-# Reset Docker
-docker-compose down -v
-docker-compose up --force-recreate
+# Rebuild
+make clean build
 ```
-
-### Database Connection
-
-```bash
-# Test connection
-psql "postgres://lumigo:lumigo@localhost:5432/lumigo?sslmode=disable" -c "SELECT 1"
-
-# Check Docker network
-docker network ls
-docker network inspect lumi-go_lumi-network
-```
-
-### Go Module Issues
-
-```bash
-# Clear module cache
-go clean -modcache
-
-# Update dependencies
-go get -u ./...
-go mod tidy
-```
-
-## Monitoring
-
-### Metrics
-
-View metrics at http://localhost:9090/metrics
-
-Key metrics:
-- `http_requests_total` - Request count
-- `http_request_duration_seconds` - Request latency
-- `go_goroutines` - Goroutine count
-- `go_memstats_alloc_bytes` - Memory usage
-
-### Tracing
-
-View traces at http://localhost:16686
-
-Finding traces:
-1. Select service: `lumi-go`
-2. Select operation or search by trace ID
-3. View timeline and spans
-
-### Dashboards
-
-Access Grafana at http://localhost:3000
-
-Default dashboards:
-- Service Overview
-- HTTP Metrics
-- Database Performance
-- Redis Cache Stats
-
-## Best Practices
-
-### Development Tips
-
-1. **Always run tests before committing**
-   ```bash
-   make ci
-   ```
-
-2. **Keep dependencies updated**
-   ```bash
-   go get -u ./...
-   go mod tidy
-   ```
-
-3. **Use conventional commits**
-   - feat: New feature
-   - fix: Bug fix
-   - docs: Documentation
-   - refactor: Code refactoring
-   - test: Test updates
-   - chore: Maintenance
-
-4. **Profile before optimizing**
-   ```bash
-   go test -bench=. -cpuprofile=cpu.prof
-   go tool pprof -http=:8080 cpu.prof
-   ```
-
-5. **Use structured logging**
-   ```go
-   logger.Info("user created",
-       zap.String("user_id", userID),
-       zap.String("email", email))
-   ```
 
 ## Resources
 
-- [Project README](../README.md)
-- [API Documentation](./api.md)
-- [Architecture Guide](./architecture.md)
-- [Contributing Guide](../CONTRIBUTING.md)
-- [Security Policy](../SECURITY.md)
+- [Effective Go](https://golang.org/doc/effective_go.html)
+- [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments)
+- [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md)
+- [Go Proverbs](https://go-proverbs.github.io/)

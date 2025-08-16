@@ -1,83 +1,69 @@
 ---
-name: ✨ Feature Request
-about: Suggest a new feature or enhancement
+name: Feature Request
+about: Suggest an idea for the lumi-go microservice
 title: '[FEATURE] '
-labels: enhancement, triage
+labels: 'enhancement, needs-triage'
 assignees: ''
 ---
 
 ## Feature Description
-<!-- A clear and concise description of the feature you'd like -->
+<!-- Provide a clear and concise description of the feature you'd like -->
 
 ## Problem Statement
-<!-- Describe the problem this feature would solve -->
+<!-- Is your feature request related to a problem? Please describe -->
+<!-- Ex. I'm always frustrated when [...] -->
 
-### Current Behavior
-<!-- How things work currently -->
+## Proposed Solution
+<!-- Describe the solution you'd like -->
+<!-- Be specific about the implementation approach if you have ideas -->
 
-### Desired Behavior
-<!-- How you'd like things to work -->
+## Alternatives Considered
+<!-- Describe any alternative solutions or features you've considered -->
 
 ## Use Cases
-<!-- Describe specific use cases for this feature -->
+<!-- Provide specific use cases where this feature would be beneficial -->
 
 1. 
 2. 
 3. 
 
-## Proposed Solution
-<!-- Describe your proposed solution or implementation approach -->
+## Implementation Suggestions
+<!-- If you have specific implementation ideas, please share them -->
 
 ### API Changes
-<!-- If applicable, describe API changes -->
-
-```go
-// Example API
-type NewFeature struct {
-    // ...
-}
-```
+<!-- Would this require API changes? If yes, describe them -->
 
 ### Configuration Changes
-<!-- If applicable, describe configuration changes -->
+<!-- Would this require new configuration options? -->
 
-```yaml
-# Example configuration
-feature:
-  enabled: true
-  options:
-    - example
-```
+### External Dependencies
+<!-- Would this require new external services or dependencies? -->
+<!-- Note: We prefer to keep the service lean. External services should be optional -->
 
-## Alternatives Considered
-<!-- Describe alternative solutions or features you've considered -->
-
-## Priority
-<!-- How important is this feature? -->
-
-- [ ] 🔴 Critical - Blocking important work
-- [ ] 🟠 High - Needed soon
-- [ ] 🟡 Medium - Would be nice to have
-- [ ] 🟢 Low - Future consideration
-
-## Success Criteria
-<!-- How will we know when this feature is successfully implemented? -->
+## Acceptance Criteria
+<!-- Define what "done" looks like for this feature -->
 
 - [ ] 
 - [ ] 
 - [ ] 
 
 ## Additional Context
-<!-- Add any other context, mockups, or examples about the feature request here -->
+<!-- Add any other context, mockups, or screenshots about the feature request here -->
 
-### References
-<!-- Links to relevant documentation, RFCs, or discussions -->
+## Impact Assessment
 
-- 
-- 
+### Benefits
+<!-- What benefits would this feature provide? -->
 
-## Checklist
-- [ ] I have searched existing issues to ensure this isn't a duplicate
-- [ ] I have clearly described the problem and solution
-- [ ] I have provided use cases
-- [ ] I have considered alternatives
+### Risks
+<!-- Are there any potential risks or drawbacks? -->
+
+### Compatibility
+<!-- Would this be backward compatible? -->
+
+---
+**For Maintainers:**
+- [ ] Feature aligns with project goals
+- [ ] Complexity is justified by value
+- [ ] Can be implemented without bloating the service
+- [ ] External dependencies (if any) can be optional

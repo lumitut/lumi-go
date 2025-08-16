@@ -1,168 +1,171 @@
-# TODO.md — lumi-go Template Build Checklist
+# TODO List for Lumi-Go
+
+## Completed ✅
+
+### Architecture Simplification
+- [x] Simplified configuration system to use optional external service clients
+- [x] Removed embedded infrastructure services from docker-compose
+- [x] Created lean Docker image containing only the Go service
+- [x] Updated configuration to use simple connection URLs
+- [x] Separated external services into independent templates
+
+### Documentation
+- [x] Updated README with lean microservice focus
+- [x] Created comprehensive development guide
+- [x] Added external services integration guide
+- [x] Updated API documentation (OpenAPI and Proto)
+- [x] Created quickstart guide
+
+### Testing
+- [x] Updated test helpers for new configuration structure
+- [x] Fixed all test compilation issues
+- [x] Added proper mocking for external dependencies
+- [x] Ensured tests run without external services
+
+### CI/CD
+- [x] Created GitHub Actions workflows (CI, Security, Release)
+- [x] Added dependabot configuration
+- [x] Updated issue and PR templates
+- [x] Added security scanning workflow
+
+### Development Experience
+- [x] Created setup script for development environment
+- [x] Added hot reload support with Air
+- [x] Updated Makefile for simplified commands
+- [x] Created docker-compose.dev.yml for development
+
+## Priority 1 (Next Sprint) 🎯
+
+### Core Features
+- [ ] Implement example REST API endpoints
+- [ ] Implement example gRPC service
+- [ ] Add request validation middleware
+- [ ] Add authentication middleware (JWT)
+- [ ] Add API versioning support
+
+### Database Integration
+- [ ] Create database client interface
+- [ ] Implement PostgreSQL client
+- [ ] Add connection pooling
+- [ ] Add migration support
+- [ ] Create repository pattern examples
+
+### Caching
+- [ ] Create cache client interface
+- [ ] Implement Redis client
+- [ ] Add in-memory cache fallback
+- [ ] Implement cache-aside pattern
+
+### Testing
+- [ ] Add more comprehensive unit tests
+- [ ] Add integration test examples
+- [ ] Add E2E test examples
+- [ ] Add load testing scripts
+- [ ] Achieve 80%+ code coverage
+
+## Priority 2 (Future) 📋
+
+### Features
+- [ ] Add GraphQL support
+- [ ] Add WebSocket support
+- [ ] Add Server-Sent Events (SSE)
+- [ ] Add batch API endpoints
+- [ ] Add async job processing
+
+### Security
+- [ ] Implement OAuth2/OIDC support
+- [ ] Add API key authentication
+- [ ] Add request signing
+- [ ] Add rate limiting by user/API key
+- [ ] Add IP allowlist/blocklist
+
+### Observability
+- [ ] Add custom business metrics
+- [ ] Add distributed tracing examples
+- [ ] Add performance profiling endpoints
+- [ ] Add request/response recording
+- [ ] Add audit logging
+
+### Resilience
+- [ ] Implement circuit breakers
+- [ ] Add retry with exponential backoff
+- [ ] Add timeout management
+- [ ] Add bulkhead pattern
+- [ ] Add graceful degradation
+
+### Performance
+- [ ] Add response compression
+- [ ] Implement caching strategies
+- [ ] Add connection pooling optimization
+- [ ] Add query optimization examples
+- [ ] Add batch processing
+
+## Priority 3 (Nice to Have) 💭
+
+### Developer Experience
+- [ ] Add CLI tool for code generation
+- [ ] Add project scaffolding tool
+- [ ] Add API client SDKs
+- [ ] Add Postman/Insomnia collections
+- [ ] Add VS Code snippets
+
+### Documentation
+- [ ] Add architecture decision records (ADRs)
+- [ ] Add performance tuning guide
+- [ ] Add security best practices
+- [ ] Add deployment guides for cloud providers
+- [ ] Add troubleshooting guide
+
+### Integrations
+- [ ] Add message queue support (Kafka, RabbitMQ)
+- [ ] Add event streaming
+- [ ] Add file storage (S3, GCS)
+- [ ] Add email service integration
+- [ ] Add notification service
+
+### Deployment
+- [ ] Add Terraform modules
+- [ ] Add AWS CDK templates
+- [ ] Add Google Cloud deployment configs
+- [ ] Add Azure ARM templates
+- [ ] Add Kubernetes operators
+
+## Tech Debt 🔧
+
+- [ ] Review and optimize error handling
+- [ ] Standardize logging format across all packages
+- [ ] Review and update all dependencies
+- [ ] Add more comprehensive input validation
+- [ ] Optimize Docker image size further
+
+## Known Issues 🐛
+
+- [ ] None currently reported
+
+## Ideas for Consideration 💡
+
+- Multi-tenant support
+- Plugin architecture
+- Feature flag service integration
+- A/B testing framework
+- Dynamic configuration reloading
+- Service mesh integration (Istio, Linkerd)
+- Chaos engineering support
+- Compliance frameworks (HIPAA, GDPR)
+
+## Contributing
+
+To add items to this TODO list:
+1. Create an issue describing the feature/fix
+2. Submit a PR updating this file
+3. Link the issue in the TODO item
+
+## Notes
+
+- Items are prioritized based on community feedback and common use cases
+- The template aims to remain lean - features should be optional
+- External services should always be optional and configurable
+- Focus on developer experience and production readiness
 
 ---
-
-## Phase 0 — Foundations - **COMPLETE**
-
-- [x] Create repository with LICENSE, README, CONTRIBUTING, SECURITY, ADR index.
-- [x] Configure branch protections (required reviews, status checks).
-- [x] Define PR templates and labels (obs, security, docs, breaking-change).
-- [x] Enable dependency, container, and secret scanning in the repo.
-- [x] Create initial `deploy/helm` skeleton and `deploy/docker` skeleton (placeholders only; no code).
-
----
-
-## Phase 1 — Local Developer Experience (LDX) - **COMPLETE**
-
-- [x] Establish repo directory layout (cmd, internal/*, api/*, deploy/\*, migrations) with README stubs.
-- [x] Add docker-compose services for Postgres, Redis, OTEL Collector, Prometheus, Grafana.
-- [x] Provide a single command to start/stop local infra and a DB seed script (placeholder).
-- [x] Document engineering setup (toolchain versions for Go, Docker, Helm, kubectl, buf, sqlc, golangci-lint, OTEL Collector).
-- [x] Validate clean local bring-up on a fresh machine.
-- [x] Tag and publish release `v0.0.2`.
-
----
-
-## Phase 2 — Observability First → Release `v0.0.3` - **COMPLETE**
-
-- [x] Wire structured logging standard (JSON, correlation fields) — documented contract.
-- [x] Register default metrics and Prometheus scrape endpoint.
-- [x] Configure OTLP export to local collector; define service resource attrs (name, env, version).
-- [x] Provide a starter Grafana dashboard JSON (latency, errors, RPS placeholders).
-- [x] Tag and publish release `v0.0.3`.
-
----
-
-## Phase 3 — Transport Surfaces → Release `v0.0.4`
-
-- [x] HTTP front door with Gin (release mode in prod), standard middleware list (request-id, real-IP, recovery, access log, rate limit, CORS off-by-default, OTEL).
-- [x] Mount ops routes: `/healthz`, `/readyz`, `/metrics`, `/debug/pprof` (restricted in non-dev).
-- [ ] RPC front door with Connect on separate listener (interceptors: tracing, logging, auth).
-- [x] Graceful lifecycle and shutdown with readiness flip on drain.
-- [ ] Image split: ensure **app image contains only the Go service** (no Postgres/Redis/OTel/Prometheus/Grafana in image).
-- [ ] Compose enforcement: verify local docker-compose runs **separate containers** for DB/cache/otel; remove any "all-in-one" overrides.
-- [ ] Tag and publish release `v0.0.4`.
-
----
-
-## Phase 3.1 — AWS Deploy
-
-- [ ] AWS prep: create ECR repository, dev EKS namespace, and CI OIDC/IAM role for future pushes.
-- [ ] Publish app image to ECR (app-only image) and deploy to dev.
-  - [ ] Install/update Helm chart to dev with ops placeholders; verify pod runs.
-  - [ ] Confirm `/metrics` scraped by Prometheus and traces reach collector.
-  - [ ] Verify `/healthz` 200, `/readyz` flips ready, and RPC stub responds.
-- [ ] Runtime separation in AWS:
-  - [ ] Use **managed RDS** for Postgres (or a separate Postgres chart in dev only), not bundled with the app.
-  - [ ] Use **ElastiCache** for Redis (or a separate Redis chart in dev only), not bundled with the app.
-  - [ ] Verify the app connects to external DB/Redis via env/Secrets and not local sidecars.
-
----
-
-## Phase 4 — Cross-Cutting Concerns → Release `v0.0.5`
-
-- [ ] Configuration system: env-first, defaults, validation, redacted boot log; publish `.env.example`.
-- [ ] AuthN/Z pattern: JWT verification via JWKS; route group protections; claims in context.
-- [ ] Validation and error model: stable error codes, HTTP mappings, response envelope.
-- [ ] Outbound policy: timeouts, retry/backoff, circuit breaker, rate limit; metrics per dependency.
-- [ ] Tag and publish release `v0.0.5`.
-- [ ] AWS smoke: deploy to dev; verify protected route denies without token and allows with valid token.
-
----
-
-## Phase 5 — Data & Caching → Release `v0.0.6`
-
-- [ ] Decide and document data layer choice (sqlc or ent) and when to use each.
-- [ ] Add baseline schema and empty migrations; wrap pgx pool with metrics/tracing.
-- [ ] Define repository interfaces separated from business logic.
-- [ ] Caching strategy: in-proc (Ristretto) + shared (Redis) adapters; TTL and invalidation guidance.
-- [ ] Migration execution separation:
-
-  - [ ] Add a **Kubernetes Job** (or Helm hook) to run DB migrations; do not run migrations inside app container startup.
-  - [ ] Ensure migrations fetch DB creds from Secrets and exit cleanly on completion.
-- [ ] Tag and publish release `v0.0.6`.
-- [ ] AWS smoke: deploy to dev; run a repo read/write against dev Postgres; confirm Redis connectivity.
-
----
-
-## Phase 6 — Testing & Quality Gates → Release `v0.0.7`
-
-- [ ] Establish testing pyramid and minimum coverage policy.
-- [ ] Add transport tests (HTTP/RPC), integration tests with ephemeral DB, and contract test harness (OpenAPI/Proto).
-- [ ] Enable race detector and benchmarks for hot paths (policy only; runnable placeholders).
-- [ ] Configure golangci-lint and static analysis rules; pre-commit guidance.
-- [ ] Tag and publish release `v0.0.7`.
-- [ ] AWS smoke: run a minimal contract test against the dev deployment endpoint.
-
----
-
-## Phase 7 — CI/CD & Environments → Release `v0.0.8`
-
-- [ ] CI pipeline v1: lint → codegen verify → tests (race, coverage) → build (multi-arch) → container scan → push image → publish Helm chart.
-- [ ] Configure caches for modules and codegen artefacts; fail on dirty tree after codegen.
-- [ ] Enforce **app-only image** in CI (policy test that no DB/Redis/otel processes are started in the image).
-- [ ] Integration tests use **service containers** for Postgres/Redis; do not start DB/cache inside the app container.
-- [ ] Define environments (dev, staging, prod) and promotion gates with manual approvals.
-- [ ] Document rollback process and image pinning in Helm values.
-- [ ] Tag and publish release `v0.0.8`.
-- [ ] AWS smoke: CI builds and pushes to ECR; pipeline deploys to dev automatically on main.
-
----
-
-## Phase 8 — Kubernetes, Helm, and Ops → Release `v0.0.9`
-
-- [ ] Standard GMT Helm chart: ports, probes, resources, HPA, pod security, network policy.
-- [ ] External dependencies via values:
-
-  - [ ] Provide values for external Postgres/Redis hosts, ports, and Secret names (no DB/Redis subcharts by default).
-  - [ ] Optional: dev-only toggle to install Bitnami Postgres/Redis charts as separate releases (never bundled in app chart).
-- [ ] Secrets management: env/secret refs, rotation guidance, external secrets compatibility.
-- [ ] Enforce non-root user, read-only root filesystem (where feasible), seccomp/profile, minimal caps.
-- [ ] NetworkPolicies:
-
-  - [ ] Restrict app egress to only DB/Redis/OTel endpoints.
-  - [ ] Restrict ingress to app from cluster ingress/controller.
-- [ ] Tag and publish release `v0.0.9`.
-- [ ] AWS smoke: helm upgrade in dev namespace with chart defaults; probes pass and HPA scales under load.
-
----
-
-## Phase 9 — Flags, Telemetry Hygiene, and DX Polish → Release `v0.0.10`
-
-- [ ] Integrate feature flag provider (Unleash or go-feature-flag); document kill-switch pattern.
-- [ ] Telemetry hygiene policy: PII redaction rules, sampling, field naming conventions.
-- [ ] DX enhancements: New Service Wizard checklist, ADR templates, onboarding guide, short screencast.
-- [ ] Tag and publish release `v0.0.10`.
-- [ ] AWS smoke: toggle a feature flag in dev and observe behavior change without redeploy.
-
----
-
-## Phase 10 — Hardening & Performance → Release `v0.0.11`
-
-- [ ] Performance baseline: record p50/p95/p99, error rate, CPU/mem at target RPS; set SLOs.
-- [ ] Chaos drills: inject latency/failures in dependencies; verify breakers, timeouts, readiness flips, autoscaling.
-- [ ] Supply chain: generate SBOMs, sign images and charts, verify attestations in CI.
-- [ ] Tag and publish release `v0.0.11`.
-- [ ] AWS smoke: run baseline load test in dev; confirm alerts fire when SLOs are breached.
-
----
-
-## Phase 11 — v0.1 Release & Scale-Out → Release `v0.1.0`
-
-- [ ] Versioned docs: publish a minimal docs site (or Confluence space) with how-tos, playbooks, ADR examples.
-- [ ] Create two pilot services from the template (HTTP-only; HTTP+RPC with DB/cache) and run full lifecycle to staging.
-- [ ] Governance: establish owners group, monthly template upgrades, quarterly dependency refresh, breaking-change policy.
-- [ ] Compile migration notes since `v0.0.1` and finalize release notes.
-- [ ] Tag and publish release `v0.1.0`.
-- [ ] AWS validation: both pilot services healthy in staging with dashboards and alerts passing; sign-off recorded.
-
----
-
-## Continuous Items (track throughout)
-
-- [ ] Keep ADRs updated for significant decisions.
-- [ ] Review and prune dependencies quarterly.
-- [ ] Rotate secrets regularly and on personnel changes.
-- [ ] Audit dashboards/alerts after each phase’s deploy.
-- [ ] Run security scans and address findings within SLA.
-- [ ] Prevent “all-in-one container” regressions: policy checks in CI, periodic audit of Dockerfile, Helm, and Compose.
+Last Updated: 2024

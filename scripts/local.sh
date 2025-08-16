@@ -1,339 +1,368 @@
 #!/bin/bash
-# Local development environment management script
+# Development helper script for Lumi-Go
+#
+# This script provides all development tools in one place:
+# - One-time environment setup: ./scripts/local.sh setup
+# - Daily service management: start/stop/restart/status/logs
+# - Testing and cleanup: test/clean
+#
+# Run './scripts/local.sh help' to see all available commands.
 
 set -e
 
-# Colors for output
+# Configuration
+SERVICE_NAME="lumi-go"
+HTTP_PORT="${LUMI_SERVER_HTTPPORT:-8080}"
+RPC_PORT="${LUMI_SERVER_RPCPORT:-8081}"
+METRICS_PORT="${LUMI_OBSERVABILITY_METRICSPORT:-9090}"
+
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
+YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Script directory
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-
-# Default values
-ACTION=""
-VERBOSE=false
-NO_LOGS=false
-SERVICES="postgres redis otel-collector prometheus grafana jaeger"
-
-# Function to print colored output
-print_color() {
-    local color=$1
-    shift
-    echo -e "${color}$*${NC}"
-}
-
-# Function to print header
+# Functions
 print_header() {
-    echo ""
-    print_color "$BLUE" "========================================="
-    print_color "$BLUE" "  lumi-go Local Development Environment"
-    print_color "$BLUE" "========================================="
-    echo ""
+    echo -e "${BLUE}================================================${NC}"
+    echo -e "${BLUE}    $1${NC}"
+    echo -e "${BLUE}================================================${NC}"
 }
 
-# Function to check dependencies
-check_dependencies() {
-    local missing_deps=()
+print_success() { echo -e "${GREEN}✓ $1${NC}"; }
+print_error() { echo -e "${RED}✗ $1${NC}"; }
+print_warning() { echo -e "${YELLOW}⚠ $1${NC}"; }
+print_info() { echo -e "ℹ $1"; }
 
-    # Check for Docker
-    if ! command -v docker &> /dev/null; then
-        missing_deps+=("docker")
-    fi
-
-    # Check for Docker Compose
-    if ! command -v docker-compose &> /dev/null; then
-        missing_deps+=("docker-compose")
-    fi
-
-    # Check for Make
-    if ! command -v make &> /dev/null; then
-        missing_deps+=("make")
-    fi
-
-    if [ ${#missing_deps[@]} -ne 0 ]; then
-        print_color "$RED" "✗ Missing dependencies: ${missing_deps[*]}"
-        print_color "$YELLOW" "Please install the missing dependencies and try again."
-        exit 1
-    fi
-
-    print_color "$GREEN" "✓ All dependencies are installed"
-}
-
-# Function to check Docker daemon
-check_docker_daemon() {
-    if ! docker info &> /dev/null; then
-        print_color "$RED" "✗ Docker daemon is not running"
-        print_color "$YELLOW" "Please start Docker and try again."
-        exit 1
-    fi
-    print_color "$GREEN" "✓ Docker daemon is running"
-}
-
-# Function to start services
-start_services() {
-    print_color "$YELLOW" "Starting services..."
-
-    cd "$PROJECT_ROOT"
-
-    # Start docker-compose services
-    docker-compose up -d
-
-    # Wait for services to be healthy
-    print_color "$YELLOW" "Waiting for services to be healthy..."
-
-    # Wait for PostgreSQL
-    print_color "$CYAN" "  • Waiting for PostgreSQL..."
-    until docker-compose exec -T postgres pg_isready -U lumigo &> /dev/null; do
-        sleep 1
-    done
-    print_color "$GREEN" "  ✓ PostgreSQL is ready"
-
-    # Wait for Redis
-    print_color "$CYAN" "  • Waiting for Redis..."
-    until docker-compose exec -T redis redis-cli ping &> /dev/null; do
-        sleep 1
-    done
-    print_color "$GREEN" "  ✓ Redis is ready"
-
-    # Run migrations
-    print_color "$YELLOW" "Running database migrations..."
-    docker-compose run --rm migrate
-    print_color "$GREEN" "✓ Migrations complete"
-
-    # Seed database (if seed script exists)
-    if [ -f "$PROJECT_ROOT/scripts/seed.sql" ]; then
-        print_color "$YELLOW" "Seeding database..."
-        docker-compose exec -T postgres psql -U lumigo -d lumigo < "$PROJECT_ROOT/scripts/seed.sql"
-        print_color "$GREEN" "✓ Database seeded"
-    fi
-
-    print_color "$GREEN" "✓ All services started successfully!"
-    echo ""
-    print_color "$BLUE" "Service URLs:"
-    print_color "$CYAN" "  • Application:    http://localhost:8080"
-    print_color "$CYAN" "  • Metrics:        http://localhost:9090/metrics"
-    print_color "$CYAN" "  • Prometheus:     http://localhost:9091"
-    print_color "$CYAN" "  • Grafana:        http://localhost:3000 (admin/admin)"
-    print_color "$CYAN" "  • Jaeger:         http://localhost:16686"
-    print_color "$CYAN" "  • PostgreSQL:     localhost:5432 (lumigo/lumigo)"
-    print_color "$CYAN" "  • Redis:          localhost:6379"
-    echo ""
-
-    if [ "$NO_LOGS" = false ]; then
-        print_color "$YELLOW" "Showing logs (press Ctrl+C to exit)..."
-        docker-compose logs -f app
-    fi
-}
-
-# Function to stop services
-stop_services() {
-    print_color "$YELLOW" "Stopping services..."
-
-    cd "$PROJECT_ROOT"
-    docker-compose down
-
-    print_color "$GREEN" "✓ All services stopped"
-}
-
-# Function to restart services
-restart_services() {
-    stop_services
-    start_services
-}
-
-# Function to show status
-show_status() {
-    print_color "$YELLOW" "Service Status:"
-    echo ""
-
-    cd "$PROJECT_ROOT"
-    docker-compose ps
-
-    echo ""
-    print_color "$YELLOW" "Container Resource Usage:"
-    docker stats --no-stream $(docker-compose ps -q) 2>/dev/null || true
-}
-
-# Function to show logs
-show_logs() {
-    local service=$1
-
-    cd "$PROJECT_ROOT"
-
-    if [ -n "$service" ]; then
-        print_color "$YELLOW" "Showing logs for $service..."
-        docker-compose logs -f "$service"
+# Check if service is running
+check_service() {
+    if curl -f -s http://localhost:$HTTP_PORT/health > /dev/null 2>&1; then
+        return 0
     else
-        print_color "$YELLOW" "Showing logs for all services..."
-        docker-compose logs -f
+        return 1
     fi
 }
 
-# Function to clean up
+# Start the service
+start_service() {
+    print_header "Starting $SERVICE_NAME"
+
+    if check_service; then
+        print_warning "Service is already running on port $HTTP_PORT"
+        return 0
+    fi
+
+    print_info "Starting service..."
+
+    # Load environment variables
+    if [ -f .env ]; then
+        export $(grep -v '^#' .env | xargs)
+    fi
+
+    # Build the service
+    print_info "Building service..."
+    go build -o build/server ./cmd/server
+
+    # Start in background
+    nohup ./build/server > logs/service.log 2>&1 &
+    echo $! > .pid
+
+    # Wait for service to be ready
+    print_info "Waiting for service to be ready..."
+    for i in {1..30}; do
+        if check_service; then
+            print_success "Service started successfully!"
+            print_info "HTTP API: http://localhost:$HTTP_PORT"
+            print_info "gRPC API: localhost:$RPC_PORT"
+            print_info "Metrics: http://localhost:$METRICS_PORT/metrics"
+            print_info "Logs: tail -f logs/service.log"
+            return 0
+        fi
+        sleep 1
+    done
+
+    print_error "Service failed to start"
+    return 1
+}
+
+# Stop the service
+stop_service() {
+    print_header "Stopping $SERVICE_NAME"
+
+    if [ -f .pid ]; then
+        PID=$(cat .pid)
+        if ps -p $PID > /dev/null; then
+            print_info "Stopping service (PID: $PID)..."
+            kill $PID
+            rm .pid
+            print_success "Service stopped"
+        else
+            print_warning "Service not running (stale PID file)"
+            rm .pid
+        fi
+    else
+        print_warning "No PID file found"
+    fi
+}
+
+# Restart the service
+restart_service() {
+    stop_service
+    sleep 2
+    start_service
+}
+
+# Show service status
+status_service() {
+    print_header "Service Status"
+
+    if check_service; then
+        print_success "Service is running"
+
+        # Get health status
+        HEALTH=$(curl -s http://localhost:$HTTP_PORT/health)
+        print_info "Health: $HEALTH"
+
+        # Get readiness status
+        READY=$(curl -s http://localhost:$HTTP_PORT/ready)
+        print_info "Readiness: $READY"
+
+        # Show process info if PID file exists
+        if [ -f .pid ]; then
+            PID=$(cat .pid)
+            print_info "Process ID: $PID"
+            ps -p $PID -o pid,vsz,rss,comm
+        fi
+    else
+        print_error "Service is not running"
+    fi
+}
+
+# Tail logs
+tail_logs() {
+    print_header "Service Logs"
+
+    if [ ! -f logs/service.log ]; then
+        print_warning "No log file found"
+        return 1
+    fi
+
+    tail -f logs/service.log
+}
+
+# Run tests
+run_tests() {
+    print_header "Running Tests"
+
+    if command -v make &> /dev/null; then
+        make test
+    else
+        print_info "Running unit tests..."
+        go test -v -race ./tests/unit/...
+
+        print_info "Running integration tests..."
+        go test -v -race -tags=integration ./tests/integration/...
+    fi
+
+    print_success "All tests passed!"
+}
+
+# Clean up
 cleanup() {
-    print_color "$YELLOW" "Cleaning up..."
+    print_header "Cleaning Up"
 
-    cd "$PROJECT_ROOT"
+    # Stop service if running
+    stop_service
 
-    # Stop and remove containers, networks, volumes
-    docker-compose down -v
+    # Clean build artifacts
+    print_info "Cleaning build artifacts..."
+    rm -rf build/
+    rm -rf tmp/
+    rm -f .pid
 
-    # Remove temporary files
-    rm -rf "$PROJECT_ROOT/tmp"
-    rm -f "$PROJECT_ROOT/air.log"
+    # Clean test cache
+    print_info "Cleaning test cache..."
+    go clean -testcache
 
-    print_color "$GREEN" "✓ Cleanup complete"
+    print_success "Cleanup complete"
 }
 
-# Function to run database console
-db_console() {
-    print_color "$YELLOW" "Connecting to PostgreSQL..."
-    cd "$PROJECT_ROOT"
-    docker-compose exec postgres psql -U lumigo -d lumigo
-}
+# Setup development environment (one-time)
+setup_environment() {
+    print_header "Setting up Development Environment"
 
-# Function to run Redis console
-redis_console() {
-    print_color "$YELLOW" "Connecting to Redis..."
-    cd "$PROJECT_ROOT"
-    docker-compose exec redis redis-cli
-}
+    # Check prerequisites
+    print_info "Checking prerequisites..."
 
-# Function to reset database
-reset_db() {
-    print_color "$YELLOW" "Resetting database..."
+    # Check Go
+    if command -v go &> /dev/null; then
+        GO_VERSION=$(go version | awk '{print $3}')
+        print_success "Go installed: $GO_VERSION"
 
-    cd "$PROJECT_ROOT"
-
-    # Run down migrations
-    docker-compose run --rm migrate -path /migrations -database "postgres://lumigo:lumigo@postgres:5432/lumigo?sslmode=disable" down -all
-
-    # Run up migrations
-    docker-compose run --rm migrate -path /migrations -database "postgres://lumigo:lumigo@postgres:5432/lumigo?sslmode=disable" up
-
-    # Seed database if seed script exists
-    if [ -f "$PROJECT_ROOT/scripts/seed.sql" ]; then
-        print_color "$YELLOW" "Seeding database..."
-        docker-compose exec -T postgres psql -U lumigo -d lumigo < "$PROJECT_ROOT/scripts/seed.sql"
+        REQUIRED_VERSION="go1.22"
+        if [[ "$GO_VERSION" < "$REQUIRED_VERSION" ]]; then
+            print_warning "Go version $REQUIRED_VERSION or higher recommended"
+        fi
+    else
+        print_error "Go is not installed"
+        echo "Please install Go from https://golang.org/dl/"
+        return 1
     fi
 
-    print_color "$GREEN" "✓ Database reset complete"
+    # Check Docker
+    if command -v docker &> /dev/null; then
+        DOCKER_VERSION=$(docker --version | awk '{print $3}' | sed 's/,//')
+        print_success "Docker installed: $DOCKER_VERSION"
+    else
+        print_warning "Docker is not installed (optional for containerized development)"
+    fi
+
+    # Check Make
+    if command -v make &> /dev/null; then
+        print_success "Make installed"
+    else
+        print_warning "Make is not installed (recommended for build commands)"
+    fi
+
+    # Install Go development tools
+    print_info "Installing Go development tools..."
+
+    # Air for hot reload
+    if ! command -v air &> /dev/null; then
+        print_info "Installing air (hot reload)..."
+        go install github.com/air-verse/air@latest
+        print_success "Air installed"
+    else
+        print_success "Air already installed"
+    fi
+
+    # golangci-lint
+    if ! command -v golangci-lint &> /dev/null; then
+        print_info "Installing golangci-lint..."
+        go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+        print_success "golangci-lint installed"
+    else
+        print_success "golangci-lint already installed"
+    fi
+
+    # goimports
+    if ! command -v goimports &> /dev/null; then
+        print_info "Installing goimports..."
+        go install golang.org/x/tools/cmd/goimports@latest
+        print_success "goimports installed"
+    else
+        print_success "goimports already installed"
+    fi
+
+    # mockgen
+    if ! command -v mockgen &> /dev/null; then
+        print_info "Installing mockgen..."
+        go install github.com/golang/mock/mockgen@latest
+        print_success "mockgen installed"
+    else
+        print_success "mockgen already installed"
+    fi
+
+    # Setup environment file
+    if [ ! -f .env ]; then
+        print_info "Creating .env file from env.example..."
+        cp env.example .env
+        print_success ".env file created"
+        print_warning "Please review and update .env with your configuration"
+    else
+        print_success ".env file already exists"
+    fi
+
+    # Download dependencies
+    print_info "Downloading Go dependencies..."
+    go mod download
+    go mod verify
+    print_success "Dependencies downloaded and verified"
+
+    # Initial build
+    print_info "Running initial build..."
+    if command -v make &> /dev/null; then
+        make build
+    else
+        mkdir -p build
+        go build -o build/server ./cmd/server
+    fi
+    print_success "Initial build successful"
+
+    # Run tests
+    print_info "Running tests..."
+    if command -v make &> /dev/null; then
+        make test
+    else
+        go test ./...
+    fi
+    print_success "Tests passed"
+
+    print_success "Development environment setup complete! 🎉"
+    echo ""
+    echo "Next steps:"
+    echo "  1. Review and update .env configuration"
+    echo "  2. Run './scripts/local.sh start' to start the service"
+    echo "  3. Visit http://localhost:$HTTP_PORT/health"
+    echo ""
+    echo "Useful commands:"
+    echo "  ./scripts/local.sh start   - Start the service"
+    echo "  ./scripts/local.sh status  - Check service status"
+    echo "  ./scripts/local.sh logs    - View service logs"
+    echo "  ./scripts/local.sh help    - Show all commands"
 }
 
-# Function to show help
-show_help() {
-    print_header
-
-    echo "Usage: $0 [command] [options]"
+# Show usage
+usage() {
+    echo "Usage: $0 {setup|start|stop|restart|status|logs|test|clean|help}"
     echo ""
     echo "Commands:"
-    echo "  start         Start all services"
-    echo "  stop          Stop all services"
-    echo "  restart       Restart all services"
-    echo "  status        Show service status"
-    echo "  logs [name]   Show logs (optionally for specific service)"
-    echo "  clean         Stop services and clean up volumes"
-    echo "  db            Open PostgreSQL console"
-    echo "  redis         Open Redis console"
-    echo "  reset-db      Reset database (drop and recreate)"
-    echo "  help          Show this help message"
-    echo ""
-    echo "Options:"
-    echo "  -v, --verbose    Show verbose output"
-    echo "  -n, --no-logs    Don't show logs after starting"
-    echo ""
-    echo "Examples:"
-    echo "  $0 start              # Start all services"
-    echo "  $0 start --no-logs    # Start without showing logs"
-    echo "  $0 logs app           # Show logs for app service"
-    echo "  $0 status             # Show status of all services"
-    echo "  $0 clean              # Stop and clean up everything"
-    echo ""
+    echo "  setup    - Setup development environment (run once)"
+    echo "  start    - Start the service"
+    echo "  stop     - Stop the service"
+    echo "  restart  - Restart the service"
+    echo "  status   - Show service status"
+    echo "  logs     - Tail service logs"
+    echo "  test     - Run tests"
+    echo "  clean    - Clean up artifacts and stop service"
+    echo "  help     - Show this help message"
 }
 
-# Parse arguments
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        start|stop|restart|status|logs|clean|db|redis|reset-db|help)
-            ACTION=$1
-            shift
-            ;;
-        -v|--verbose)
-            VERBOSE=true
-            shift
-            ;;
-        -n|--no-logs)
-            NO_LOGS=true
-            shift
-            ;;
-        *)
-            # For logs command, this could be the service name
-            if [ "$ACTION" = "logs" ]; then
-                SERVICE_NAME=$1
-            else
-                print_color "$RED" "Unknown option: $1"
-                show_help
-                exit 1
-            fi
-            shift
-            ;;
-    esac
-done
+# Create necessary directories
+mkdir -p logs build
 
-# If no action specified, show help
-if [ -z "$ACTION" ]; then
-    show_help
-    exit 0
-fi
-
-# Execute action
-print_header
-
-case $ACTION in
+# Main script
+case "$1" in
+    setup)
+        setup_environment
+        ;;
     start)
-        check_dependencies
-        check_docker_daemon
-        start_services
+        start_service
         ;;
     stop)
-        stop_services
+        stop_service
         ;;
     restart)
-        check_dependencies
-        check_docker_daemon
-        restart_services
+        restart_service
         ;;
     status)
-        show_status
+        status_service
         ;;
     logs)
-        show_logs "$SERVICE_NAME"
+        tail_logs
+        ;;
+    test)
+        run_tests
         ;;
     clean)
         cleanup
         ;;
-    db)
-        db_console
-        ;;
-    redis)
-        redis_console
-        ;;
-    reset-db)
-        reset_db
-        ;;
-    help)
-        show_help
+    help|--help|-h)
+        usage
         ;;
     *)
-        print_color "$RED" "Unknown command: $ACTION"
-        show_help
+        usage
         exit 1
         ;;
 esac

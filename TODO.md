@@ -21,7 +21,6 @@
 - [x] Validate clean local bring-up on a fresh machine.
 - [x] Tag and publish release `v0.0.2`.
 
-
 ---
 
 ## Phase 2 — Observability First → Release `v0.0.3` - **COMPLETE**
@@ -36,21 +35,27 @@
 
 ## Phase 3 — Transport Surfaces → Release `v0.0.4`
 
-- [ ] HTTP front door with Gin (release mode in prod), standard middleware list (request-id, real-IP, recovery, access log, rate limit, CORS off-by-default, OTEL).
-- [ ] Mount ops routes: `/healthz`, `/readyz`, `/metrics`, `/debug/pprof` (restricted in non-dev).
+- [x] HTTP front door with Gin (release mode in prod), standard middleware list (request-id, real-IP, recovery, access log, rate limit, CORS off-by-default, OTEL).
+- [x] Mount ops routes: `/healthz`, `/readyz`, `/metrics`, `/debug/pprof` (restricted in non-dev).
 - [ ] RPC front door with Connect on separate listener (interceptors: tracing, logging, auth).
-- [ ] Graceful lifecycle and shutdown with readiness flip on drain.
+- [x] Graceful lifecycle and shutdown with readiness flip on drain.
+- [ ] Image split: ensure **app image contains only the Go service** (no Postgres/Redis/OTel/Prometheus/Grafana in image).
+- [ ] Compose enforcement: verify local docker-compose runs **separate containers** for DB/cache/otel; remove any "all-in-one" overrides.
 - [ ] Tag and publish release `v0.0.4`.
 
 ---
 
-## Phase 3.1 - AWS Deploy
+## Phase 3.1 — AWS Deploy
 
 - [ ] AWS prep: create ECR repository, dev EKS namespace, and CI OIDC/IAM role for future pushes.
-- [ ] AWS smoke: publish image to ECR; deploy to dev.
+- [ ] Publish app image to ECR (app-only image) and deploy to dev.
   - [ ] Install/update Helm chart to dev with ops placeholders; verify pod runs.
   - [ ] Confirm `/metrics` scraped by Prometheus and traces reach collector.
   - [ ] Verify `/healthz` 200, `/readyz` flips ready, and RPC stub responds.
+- [ ] Runtime separation in AWS:
+  - [ ] Use **managed RDS** for Postgres (or a separate Postgres chart in dev only), not bundled with the app.
+  - [ ] Use **ElastiCache** for Redis (or a separate Redis chart in dev only), not bundled with the app.
+  - [ ] Verify the app connects to external DB/Redis via env/Secrets and not local sidecars.
 
 ---
 
@@ -71,6 +76,10 @@
 - [ ] Add baseline schema and empty migrations; wrap pgx pool with metrics/tracing.
 - [ ] Define repository interfaces separated from business logic.
 - [ ] Caching strategy: in-proc (Ristretto) + shared (Redis) adapters; TTL and invalidation guidance.
+- [ ] Migration execution separation:
+
+  - [ ] Add a **Kubernetes Job** (or Helm hook) to run DB migrations; do not run migrations inside app container startup.
+  - [ ] Ensure migrations fetch DB creds from Secrets and exit cleanly on completion.
 - [ ] Tag and publish release `v0.0.6`.
 - [ ] AWS smoke: deploy to dev; run a repo read/write against dev Postgres; confirm Redis connectivity.
 
@@ -91,6 +100,8 @@
 
 - [ ] CI pipeline v1: lint → codegen verify → tests (race, coverage) → build (multi-arch) → container scan → push image → publish Helm chart.
 - [ ] Configure caches for modules and codegen artefacts; fail on dirty tree after codegen.
+- [ ] Enforce **app-only image** in CI (policy test that no DB/Redis/otel processes are started in the image).
+- [ ] Integration tests use **service containers** for Postgres/Redis; do not start DB/cache inside the app container.
 - [ ] Define environments (dev, staging, prod) and promotion gates with manual approvals.
 - [ ] Document rollback process and image pinning in Helm values.
 - [ ] Tag and publish release `v0.0.8`.
@@ -101,9 +112,16 @@
 ## Phase 8 — Kubernetes, Helm, and Ops → Release `v0.0.9`
 
 - [ ] Standard GMT Helm chart: ports, probes, resources, HPA, pod security, network policy.
+- [ ] External dependencies via values:
+
+  - [ ] Provide values for external Postgres/Redis hosts, ports, and Secret names (no DB/Redis subcharts by default).
+  - [ ] Optional: dev-only toggle to install Bitnami Postgres/Redis charts as separate releases (never bundled in app chart).
 - [ ] Secrets management: env/secret refs, rotation guidance, external secrets compatibility.
 - [ ] Enforce non-root user, read-only root filesystem (where feasible), seccomp/profile, minimal caps.
-- [ ] Provide values files per environment (dev, staging, prod).
+- [ ] NetworkPolicies:
+
+  - [ ] Restrict app egress to only DB/Redis/OTel endpoints.
+  - [ ] Restrict ingress to app from cluster ingress/controller.
 - [ ] Tag and publish release `v0.0.9`.
 - [ ] AWS smoke: helm upgrade in dev namespace with chart defaults; probes pass and HPA scales under load.
 
@@ -129,13 +147,13 @@
 
 ---
 
-## Phase 11 — Template Release & Scale-Out → Release `v1.0.0`
+## Phase 11 — v0.1 Release & Scale-Out → Release `v0.1.0`
 
 - [ ] Versioned docs: publish a minimal docs site (or Confluence space) with how-tos, playbooks, ADR examples.
 - [ ] Create two pilot services from the template (HTTP-only; HTTP+RPC with DB/cache) and run full lifecycle to staging.
 - [ ] Governance: establish owners group, monthly template upgrades, quarterly dependency refresh, breaking-change policy.
 - [ ] Compile migration notes since `v0.0.1` and finalize release notes.
-- [ ] Tag and publish release `v1.0.0`.
+- [ ] Tag and publish release `v0.1.0`.
 - [ ] AWS validation: both pilot services healthy in staging with dashboards and alerts passing; sign-off recorded.
 
 ---
@@ -147,5 +165,4 @@
 - [ ] Rotate secrets regularly and on personnel changes.
 - [ ] Audit dashboards/alerts after each phase’s deploy.
 - [ ] Run security scans and address findings within SLA.
-
----
+- [ ] Prevent “all-in-one container” regressions: policy checks in CI, periodic audit of Dockerfile, Helm, and Compose.

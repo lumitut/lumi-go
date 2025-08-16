@@ -9,17 +9,13 @@ Tests are organized to mirror the internal package structure:
 ```
 tests/
 ├── unit/  
-│   └── observability/     # Observability component tests
-│       └── logger/        # Logger tests
-├── middleware/            # Middleware tests (future)
-├── services/              # Service layer tests (future)
-├── repositories/          # Repository tests (future)
 ├── integration/           # Integration tests (future)
 ├── e2e/                   # End-to-end tests (future)
 ├── performance/           # Performance tests (future)
 ├── ...                    # 
 ├── fixtures/              # Fixtures
-└──          # 
+├── helpers/              # Test helpers
+└── setup/                 # 
 
 ```
 

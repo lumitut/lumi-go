@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -82,12 +83,26 @@ func Initialize(ctx context.Context, cfg Config) (func(context.Context) error, e
 	// Create sampler
 	sampler := sdktrace.TraceIDRatioBased(cfg.SampleRate)
 
-	// Create tracer provider
+	// Create tracer provider with custom error handler
 	tp := sdktrace.NewTracerProvider(
-		sdktrace.WithBatcher(exporter),
+		sdktrace.WithBatcher(exporter,
+			sdktrace.WithBatchTimeout(5*time.Second),
+			sdktrace.WithMaxExportBatchSize(512),
+			sdktrace.WithMaxQueueSize(2048),
+		),
 		sdktrace.WithResource(res),
 		sdktrace.WithSampler(sampler),
 	)
+
+	// Set custom error handler to suppress connection errors
+	otel.SetErrorHandler(otel.ErrorHandlerFunc(func(err error) {
+		// Suppress connection refused errors
+		if err != nil && !strings.Contains(err.Error(), "connection refused") &&
+			!strings.Contains(err.Error(), "context deadline exceeded") {
+			// Only log unexpected errors
+			fmt.Fprintf(os.Stderr, "OpenTelemetry error: %v\n", err)
+		}
+	}))
 
 	// Set global tracer provider
 	otel.SetTracerProvider(tp)
@@ -154,13 +169,13 @@ func createGRPCExporter(ctx context.Context, cfg Config) (*otlptrace.Exporter, e
 		opts = append(opts, otlptracegrpc.WithTLSCredentials(insecure.NewCredentials()))
 	}
 
-	// Add retry configuration
+	// Add retry configuration with reduced timeouts for faster failure
 	opts = append(opts,
 		otlptracegrpc.WithRetry(otlptracegrpc.RetryConfig{
 			Enabled:         true,
-			InitialInterval: 1 * time.Second,
-			MaxInterval:     30 * time.Second,
-			MaxElapsedTime:  1 * time.Minute,
+			InitialInterval: 500 * time.Millisecond,
+			MaxInterval:     5 * time.Second,
+			MaxElapsedTime:  10 * time.Second,
 		}),
 	)
 

@@ -4,6 +4,7 @@ package metrics
 import (
 	"context"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -45,6 +46,7 @@ type Metrics struct {
 	AppInfo           *prometheus.GaugeVec
 	ProcessUptime     prometheus.Counter
 	HealthCheckStatus prometheus.Gauge
+	PanicsTotal       prometheus.Counter
 }
 
 var (
@@ -84,6 +86,10 @@ func Initialize(namespace, subsystem string) *Metrics {
 	if globalMetrics != nil {
 		return globalMetrics
 	}
+
+	// Sanitize namespace and subsystem for Prometheus (replace hyphens with underscores)
+	namespace = strings.ReplaceAll(namespace, "-", "_")
+	subsystem = strings.ReplaceAll(subsystem, "-", "_")
 
 	metrics := &Metrics{
 		// HTTP metrics
@@ -281,6 +287,14 @@ func Initialize(namespace, subsystem string) *Metrics {
 				Subsystem: subsystem,
 				Name:      "health_check_status",
 				Help:      "Health check status (1 = healthy, 0 = unhealthy)",
+			},
+		),
+		PanicsTotal: promauto.NewCounter(
+			prometheus.CounterOpts{
+				Namespace: namespace,
+				Subsystem: subsystem,
+				Name:      "panics_total",
+				Help:      "Total number of panics recovered",
 			},
 		),
 	}

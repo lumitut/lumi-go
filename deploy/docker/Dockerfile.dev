@@ -1,7 +1,7 @@
 # Development Dockerfile with hot-reload support
 # NOT FOR PRODUCTION USE
 
-FROM golang:1.22-alpine
+FROM golang:1.25-alpine
 
 # Install development tools
 RUN apk add --no-cache \

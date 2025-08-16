@@ -306,10 +306,10 @@ func TestConfigFromEnvironment(t *testing.T) {
 	// Save current working directory
 	originalWd, _ := os.Getwd()
 	defer os.Chdir(originalWd)
-	
+
 	// Change to project root for config file access
 	os.Chdir("../../../")
-	
+
 	// Set environment variables
 	os.Setenv("LUMI_SERVICE_NAME", "test-service")
 	os.Setenv("LUMI_SERVER_HTTPPORT", "9090")

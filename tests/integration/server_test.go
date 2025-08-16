@@ -54,7 +54,7 @@ func TestServerLifecycle(t *testing.T) {
 
 func TestHealthEndpoints(t *testing.T) {
 	// Setup test server
-	ts, router, cleanup := helpers.SetupTestServer(t)
+	ts, _, cleanup := helpers.SetupTestServer(t)
 	defer cleanup()
 
 	tests := []struct {

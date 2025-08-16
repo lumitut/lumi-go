@@ -1,221 +1,344 @@
-# Tests Directory
+# Testing Guide for Lumi-Go
 
-This directory contains all tests for the lumi-go project, organized by component.
+This directory contains all test suites for the lumi-go microservice. The tests are organized to focus on the core microservice functionality without requiring external dependencies.
 
-## 📂 Test Organization
-
-Tests are organized to mirror the internal package structure:
+## Test Organization
 
 ```
 tests/
-├── unit/  
-├── integration/           # Integration tests (future)
-├── e2e/                   # End-to-end tests (future)
-├── performance/           # Performance tests (future)
-├── ...                    # 
-├── fixtures/              # Fixtures
-├── helpers/              # Test helpers
-└── setup/                 # 
-
+├── unit/           # Unit tests for individual components
+├── integration/    # Integration tests for API endpoints
+├── e2e/           # End-to-end tests for complete workflows
+├── performance/   # Performance and load tests
+├── fixtures/      # Test data and mocks
+└── helpers/       # Shared test utilities
 ```
 
-## 🧪 Running Tests
+## Testing Philosophy
+
+1. **No External Dependencies for Unit Tests**: Unit tests should run without databases, Redis, or external services
+2. **Mocked External Services**: Use interfaces and mocks for external dependencies
+3. **Fast Feedback**: Tests should run quickly to enable rapid development
+4. **Clear Test Names**: Test names should describe what they test and expected behavior
+
+## Running Tests
 
 ### All Tests
 ```bash
-# Run all tests
 make test
-
-# Run with coverage
-make test-coverage
-
-# Run with race detection
-make test-race
 ```
 
-### Specific Components
+### Unit Tests Only
 ```bash
-# Test logger
-go test ./tests/observability/logger/...
-
-# Test with verbose output
-go test -v ./tests/observability/logger/...
-
-# Run specific test
-go test -run TestLoggerInitialization ./tests/observability/logger/
+make test-unit
+# or
+go test -v -race ./tests/unit/...
 ```
 
-### Benchmarks
+### Integration Tests
 ```bash
-# Run all benchmarks
-go test -bench=. ./tests/...
-
-# Run specific benchmark
-go test -bench=BenchmarkLogging ./tests/observability/logger/
-
-# Run benchmarks with memory profiling
-go test -bench=. -benchmem ./tests/observability/logger/
+make test-integration
+# or
+go test -v -race -tags=integration ./tests/integration/...
 ```
 
-## 📝 Writing Tests
-
-### Test File Naming
-- Unit tests: `*_test.go`
-- Integration tests: `*_integration_test.go`
-- Benchmarks: Include `Benchmark*` functions in test files
-
-### Test Structure
-```go
-func TestComponentFunction(t *testing.T) {
-    // Arrange
-    // ... setup test data
-    
-    // Act
-    // ... execute function
-    
-    // Assert
-    // ... verify results
-}
+### End-to-End Tests
+```bash
+make test-e2e
+# or
+go test -v -race -tags=e2e ./tests/e2e/...
 ```
 
-### Table-Driven Tests
+### Coverage Report
+```bash
+make coverage
+# View HTML report
+open coverage/coverage.html
+```
+
+## Writing Tests
+
+### Unit Test Example
+
 ```go
-func TestFunction(t *testing.T) {
+// tests/unit/config/config_test.go
+package config_test
+
+import (
+    "testing"
+    "github.com/stretchr/testify/assert"
+    "github.com/lumitut/lumi-go/internal/config"
+)
+
+func TestConfig_Validate(t *testing.T) {
     tests := []struct {
         name    string
-        input   string
-        want    string
+        config  *config.Config
         wantErr bool
     }{
         {
-            name:  "valid input",
-            input: "test",
-            want:  "TEST",
+            name: "valid config",
+            config: &config.Config{
+                Service: config.ServiceConfig{
+                    Name:        "test-service",
+                    Environment: "development",
+                },
+            },
+            wantErr: false,
         },
-        // ... more test cases
+        {
+            name: "missing service name",
+            config: &config.Config{
+                Service: config.ServiceConfig{
+                    Environment: "development",
+                },
+            },
+            wantErr: true,
+        },
     }
     
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
-            // test implementation
+            err := tt.config.Validate()
+            if tt.wantErr {
+                assert.Error(t, err)
+            } else {
+                assert.NoError(t, err)
+            }
         })
     }
 }
 ```
 
-## 🎯 Test Coverage Goals
+### Integration Test Example
 
-| Component | Target Coverage | Current |
-|-----------|----------------|---------|
-| Core Business Logic | 90% | - |
-| HTTP Handlers | 80% | - |
-| Middleware | 85% | - |
-| Utilities | 95% | - |
-| Database Repositories | 75% | - |
-
-## 🔧 Test Utilities
-
-### Mocking
 ```go
-// Use interfaces for dependency injection
-type UserService interface {
-    GetUser(ctx context.Context, id string) (*User, error)
-}
+// tests/integration/api_test.go
+// +build integration
 
-// Create mock implementations for testing
-type mockUserService struct {
-    getUserFunc func(ctx context.Context, id string) (*User, error)
+package integration_test
+
+import (
+    "net/http"
+    "net/http/httptest"
+    "testing"
+    
+    "github.com/stretchr/testify/assert"
+    "github.com/lumitut/lumi-go/internal/httpapi"
+)
+
+func TestHealthEndpoint(t *testing.T) {
+    // Setup
+    server := httpapi.NewServer(testConfig())
+    router := server.SetupRoutes()
+    
+    // Test
+    w := httptest.NewRecorder()
+    req, _ := http.NewRequest("GET", "/health", nil)
+    router.ServeHTTP(w, req)
+    
+    // Assert
+    assert.Equal(t, http.StatusOK, w.Code)
+    assert.Contains(t, w.Body.String(), "healthy")
 }
 ```
 
-### Test Fixtures
+### Mocking External Services
+
 ```go
-// Store test data in testdata/ directories
-data, err := os.ReadFile("testdata/user.json")
+// tests/fixtures/mock_database.go
+package fixtures
+
+type MockDatabase struct {
+    GetUserFunc func(id string) (*User, error)
+}
+
+func (m *MockDatabase) GetUser(id string) (*User, error) {
+    if m.GetUserFunc != nil {
+        return m.GetUserFunc(id)
+    }
+    return nil, nil
+}
+
+// Usage in tests
+func TestServiceWithDatabase(t *testing.T) {
+    mockDB := &MockDatabase{
+        GetUserFunc: func(id string) (*User, error) {
+            return &User{ID: id, Name: "Test User"}, nil
+        },
+    }
+    
+    service := NewService(mockDB)
+    user, err := service.GetUser("123")
+    
+    assert.NoError(t, err)
+    assert.Equal(t, "Test User", user.Name)
+}
+```
+
+## Test Patterns
+
+### Table-Driven Tests
+Use table-driven tests for testing multiple scenarios:
+
+```go
+func TestCalculate(t *testing.T) {
+    tests := []struct {
+        name     string
+        input    int
+        expected int
+    }{
+        {"positive", 5, 10},
+        {"negative", -5, 0},
+        {"zero", 0, 0},
+    }
+    
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            result := Calculate(tt.input)
+            assert.Equal(t, tt.expected, result)
+        })
+    }
+}
+```
+
+### Parallel Tests
+Run independent tests in parallel for faster execution:
+
+```go
+func TestParallel(t *testing.T) {
+    t.Parallel()
+    // test code
+}
 ```
 
 ### Test Helpers
+Create helper functions for common test setup:
+
 ```go
-// Create helper functions for common setup
-func setupTestDB(t *testing.T) *sql.DB {
-    // ... setup test database
+// tests/helpers/setup.go
+func NewTestServer(t *testing.T) *httptest.Server {
+    t.Helper()
+    // setup code
+    return server
 }
 ```
 
-## 🏃 CI/CD Integration
+## Benchmarking
 
-Tests are automatically run in CI/CD pipeline:
-1. Unit tests on every push
-2. Integration tests on PR
-3. E2E tests before deployment
-4. Performance tests weekly
+Write benchmarks to measure performance:
 
-## 📊 Test Reports
+```go
+// tests/unit/service/service_bench_test.go
+func BenchmarkProcessRequest(b *testing.B) {
+    service := NewService()
+    request := createTestRequest()
+    
+    b.ResetTimer()
+    for i := 0; i < b.N; i++ {
+        service.ProcessRequest(request)
+    }
+}
 
-Test results are available in:
-- Console output during development
-- JUnit XML for CI/CD integration
-- HTML coverage reports in `coverage/`
-- Performance profiles in `profiles/`
-
-## 🚀 Performance Testing
-
-### Load Testing
-```bash
-# Run load tests
-make test-load
-
-# Custom load test
-go test -run=XXX -bench=. -benchtime=10s ./tests/performance/
+// Run benchmarks
+// make bench
 ```
 
-### Profiling
-```bash
-# CPU profiling
-go test -cpuprofile=cpu.prof -bench=. ./tests/...
+## Testing with External Services
 
-# Memory profiling
-go test -memprofile=mem.prof -bench=. ./tests/...
+For tests that require external services, use build tags:
 
-# View profiles
-go tool pprof cpu.prof
+```go
+// +build integration,postgres
+
+package integration_test
+
+func TestWithPostgres(t *testing.T) {
+    if testing.Short() {
+        t.Skip("Skipping test that requires PostgreSQL")
+    }
+    
+    // Test with real PostgreSQL connection
+    db := setupTestDatabase(t)
+    defer cleanupDatabase(t, db)
+    
+    // test code
+}
 ```
 
-## 🔍 Debugging Tests
+## Continuous Integration
 
-### Verbose Output
-```bash
-go test -v ./tests/...
+The CI pipeline runs tests in this order:
+1. Unit tests (no external dependencies)
+2. Integration tests (may use test containers)
+3. E2E tests (full system tests)
+
+```yaml
+# .github/workflows/test.yml
+- name: Run tests
+  run: |
+    make test-unit
+    make test-integration
+    make coverage-check
 ```
 
-### Debug Specific Test
+## Best Practices
+
+1. **Keep Tests Fast**: Aim for < 1 second per unit test
+2. **Test Behavior, Not Implementation**: Focus on what the code does, not how
+3. **Use Descriptive Names**: Test names should be self-documenting
+4. **Isolate Tests**: Tests should not depend on each other
+5. **Clean Up**: Always clean up resources in tests
+6. **Use t.Helper()**: Mark helper functions with t.Helper()
+7. **Check Error Messages**: Test both error occurrence and message content
+8. **Use Subtests**: Group related tests using t.Run()
+
+## Testing Commands Reference
+
 ```bash
-# Use Delve debugger
-dlv test ./tests/observability/logger/ -- -test.run TestLoggerInitialization
+# Run all tests
+go test ./...
+
+# Run with verbose output
+go test -v ./...
+
+# Run with race detection
+go test -race ./...
+
+# Run specific test
+go test -run TestName ./...
+
+# Generate coverage
+go test -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out
+
+# Run benchmarks
+go test -bench=. ./...
+
+# Run with specific tags
+go test -tags=integration ./...
+
+# Skip long tests
+go test -short ./...
 ```
 
-### Test Timeout
-```bash
-# Set custom timeout (default 10m)
-go test -timeout 30s ./tests/...
-```
+## Troubleshooting
 
-## 📚 Best Practices
+### Tests Hanging
+- Check for deadlocks in concurrent code
+- Add timeouts to tests: `ctx, cancel := context.WithTimeout(...)`
 
-1. **Keep tests independent** - Each test should be able to run in isolation
-2. **Use descriptive names** - Test names should clearly describe what they test
-3. **Test one thing** - Each test should verify a single behavior
-4. **Avoid test pollution** - Clean up resources after tests
-5. **Mock external dependencies** - Don't rely on external services in unit tests
-6. **Use t.Helper()** - Mark helper functions to improve error messages
-7. **Prefer table-driven tests** - Easier to add test cases
-8. **Test edge cases** - Include boundary conditions and error paths
-9. **Keep tests fast** - Unit tests should run in milliseconds
-10. **Document complex tests** - Add comments explaining non-obvious test logic
+### Flaky Tests
+- Remove time-dependent assertions
+- Use deterministic test data
+- Mock time.Now() when needed
 
-## 🔗 References
+### Slow Tests
+- Run tests in parallel with `t.Parallel()`
+- Use smaller datasets for unit tests
+- Move slow tests to integration suite
 
-- [Go Testing Documentation](https://golang.org/pkg/testing/)
-- [Go Testing Best Practices](https://golang.org/doc/tutorial/add-a-test)
-- [Table Driven Tests](https://dave.cheney.net/2019/05/07/prefer-table-driven-tests)
-- [Test Coverage](https://go.dev/blog/cover)
+### Coverage Issues
+- Exclude generated code from coverage
+- Focus on testing business logic
+- Aim for 80%+ coverage of critical paths

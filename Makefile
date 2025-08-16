@@ -51,10 +51,20 @@ build:
 	$(GOBUILD) $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PATH)
 	@echo "$(GREEN)Build complete: $(BUILD_DIR)/$(BINARY_NAME)$(NC)"
 
-## run: Run the application
+## run: Run the application locally
 run: build
 	@echo "$(GREEN)Running $(PROJECT_NAME)...$(NC)"
 	./$(BUILD_DIR)/$(BINARY_NAME)
+
+## run-dev: Run the application with hot reload (requires air)
+run-dev:
+	@echo "$(GREEN)Running $(PROJECT_NAME) in development mode...$(NC)"
+	@if command -v air >/dev/null 2>&1; then \
+		air; \
+	else \
+		echo "$(YELLOW)Air not installed. Install with: go install github.com/air-verse/air@latest$(NC)"; \
+		exit 1; \
+	fi
 
 ## test: Run all tests
 test:
@@ -130,20 +140,27 @@ lint:
 		$(GOLINT) run ./...; \
 	else \
 		echo "$(YELLOW)golangci-lint not installed, skipping...$(NC)"; \
+		echo "$(YELLOW)Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest$(NC)"; \
 	fi
 
 ## clean: Clean build artifacts
 clean:
 	@echo "$(GREEN)Cleaning...$(NC)"
 	$(GOCLEAN)
-	@rm -rf $(BUILD_DIR) $(COVERAGE_DIR)
+	@rm -rf $(BUILD_DIR) $(COVERAGE_DIR) tmp/
 	@rm -f $(BINARY_NAME)
 
-## deps: Download dependencies
+## deps: Download and verify dependencies
 deps:
 	@echo "$(GREEN)Downloading dependencies...$(NC)"
-	$(GOGET) -u ./...
 	$(GOMOD) download
+	$(GOMOD) verify
+	$(GOMOD) tidy
+
+## deps-update: Update dependencies to latest versions
+deps-update:
+	@echo "$(GREEN)Updating dependencies...$(NC)"
+	$(GOGET) -u ./...
 	$(GOMOD) tidy
 
 ## install-tools: Install development tools
@@ -152,6 +169,7 @@ install-tools:
 	$(GO) install github.com/golang/mock/mockgen@latest
 	$(GO) install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	$(GO) install golang.org/x/tools/cmd/goimports@latest
+	$(GO) install github.com/air-verse/air@latest
 
 ## generate: Generate code (mocks, etc.)
 generate:
@@ -163,24 +181,25 @@ docker-build:
 	@echo "$(GREEN)Building Docker image...$(NC)"
 	docker build -t $(PROJECT_NAME):latest -f deploy/docker/Dockerfile .
 
+## docker-build-dev: Build development Docker image
+docker-build-dev:
+	@echo "$(GREEN)Building development Docker image...$(NC)"
+	docker build -t $(PROJECT_NAME):dev -f deploy/docker/Dockerfile.dev .
+
 ## docker-run: Run Docker container
 docker-run: docker-build
 	@echo "$(GREEN)Running Docker container...$(NC)"
-	docker run -p 8080:8080 -p 8081:8081 $(PROJECT_NAME):latest
+	docker run -p 8080:8080 -p 8081:8081 -p 9090:9090 $(PROJECT_NAME):latest
 
-## compose-up: Start services with docker-compose
-compose-up:
-	@echo "$(GREEN)Starting services...$(NC)"
-	docker-compose up -d
+## docker-dev: Run development environment with Docker Compose
+docker-dev:
+	@echo "$(GREEN)Starting development environment...$(NC)"
+	docker-compose -f docker-compose.dev.yml up --build
 
-## compose-down: Stop services
-compose-down:
-	@echo "$(GREEN)Stopping services...$(NC)"
-	docker-compose down
-
-## compose-logs: View service logs
-compose-logs:
-	docker-compose logs -f
+## docker-stop: Stop Docker containers
+docker-stop:
+	@echo "$(GREEN)Stopping Docker containers...$(NC)"
+	docker-compose -f docker-compose.dev.yml down
 
 ## ci: Run CI pipeline locally
 ci: clean deps fmt vet lint test coverage-check build
@@ -193,5 +212,20 @@ release: ci
 	git tag -a $$version -m "Release $$version"; \
 	git push origin $$version; \
 	echo "$(GREEN)Release $$version created$(NC)"
+
+## health: Check service health
+health:
+	@echo "$(GREEN)Checking service health...$(NC)"
+	@curl -f http://localhost:8080/health || echo "$(RED)Service is not healthy$(NC)"
+
+## ready: Check service readiness
+ready:
+	@echo "$(GREEN)Checking service readiness...$(NC)"
+	@curl -f http://localhost:8080/ready || echo "$(RED)Service is not ready$(NC)"
+
+## metrics: Display service metrics
+metrics:
+	@echo "$(GREEN)Fetching service metrics...$(NC)"
+	@curl -s http://localhost:9090/metrics | head -20
 
 .DEFAULT_GOAL := help

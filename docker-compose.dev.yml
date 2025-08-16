@@ -1,0 +1,56 @@
+version: '3.8'
+
+# Development environment with hot-reload and debugging support
+#
+# To connect external services:
+# 1. Run the service templates separately (lumi-postgres, lumi-redis, etc.)
+# 2. Configure connections via environment variables
+#
+# Example:
+#   docker-compose -f ../lumi-postgres/docker-compose.yml up -d
+#   docker-compose -f docker-compose.dev.yml up
+
+services:
+  app-dev:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.dev
+    container_name: lumi-go-dev
+    ports:
+      - "8080:8080"  # HTTP API
+      - "8081:8081"  # gRPC/Connect RPC
+      - "9090:9090"  # Prometheus metrics
+      - "2345:2345"  # Delve debugger
+    volumes:
+      - .:/app
+      - go-modules:/go/pkg/mod
+    environment:
+      # Development settings
+      - LUMI_SERVICE_ENVIRONMENT=development
+      - LUMI_SERVICE_LOGLEVEL=debug
+      - LUMI_OBSERVABILITY_LOGDEVELOPMENT=true
+      - GIN_MODE=debug
+
+      # Hot reload with Air
+      - AIR_BUILD_CMD=go build -o ./tmp/main ./cmd/server
+      - AIR_BUILD_BIN=./tmp/main
+
+      # Optional: Connect to external services
+      # Uncomment and update these if you have external services running
+      # - LUMI_CLIENTS_DATABASE_ENABLED=true
+      # - LUMI_CLIENTS_DATABASE_URL=postgres://lumigo:lumigo@host.docker.internal:5432/lumigo?sslmode=disable
+      # - LUMI_CLIENTS_REDIS_ENABLED=true
+      # - LUMI_CLIENTS_REDIS_URL=redis://host.docker.internal:6379/0
+      # - LUMI_CLIENTS_TRACING_ENABLED=true
+      # - LUMI_CLIENTS_TRACING_ENDPOINT=host.docker.internal:4317
+    command: air
+    networks:
+      - lumi-dev-network
+    restart: unless-stopped
+
+networks:
+  lumi-dev-network:
+    driver: bridge
+
+volumes:
+  go-modules:

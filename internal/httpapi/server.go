@@ -83,7 +83,7 @@ func setupRouter(cfg *config.Config) *gin.Engine {
 	router.Use(middleware.Correlation())
 
 	// 4. OpenTelemetry tracing
-	if cfg.Observability.TracingEnabled {
+	if cfg.IsTracingEnabled() {
 		router.Use(middleware.TracingWithConfig(middleware.TracingConfig{
 			ServiceName:   cfg.Service.Name,
 			SkipPaths:     cfg.Middleware.LogSkipPaths,

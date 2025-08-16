@@ -57,17 +57,17 @@ func main() {
 	metrics.Initialize(metricsNamespace, "api")
 	metrics.StartUptimeCounter(ctx)
 
-	// Initialize tracing
-	if cfg.Observability.TracingEnabled {
+	// Initialize tracing if enabled
+	if cfg.IsTracingEnabled() {
 		tracingConfig := tracing.Config{
 			ServiceName:      cfg.Service.Name,
 			ServiceVersion:   cfg.Service.Version,
 			Environment:      cfg.Service.Environment,
-			Enabled:          cfg.Observability.TracingEnabled,
-			SampleRate:       cfg.Observability.TracingSampling,
-			ExporterEndpoint: cfg.Observability.TracingEndpoint,
+			Enabled:          true,
+			SampleRate:       1.0, // Default sampling rate
+			ExporterEndpoint: cfg.Clients.Tracing.Endpoint,
 			ExporterProtocol: "grpc", // Default to gRPC
-			Insecure:         cfg.Observability.TracingInsecure,
+			Insecure:         true,   // Default for local dev
 		}
 
 		shutdown, err := tracing.Initialize(ctx, tracingConfig)
@@ -89,8 +89,9 @@ func main() {
 		zap.String("version", cfg.Service.Version),
 		zap.String("environment", cfg.Service.Environment),
 		zap.String("service_name", cfg.Service.Name),
-		zap.Bool("tracing_enabled", cfg.Observability.TracingEnabled),
-		zap.String("otel_endpoint", cfg.Observability.TracingEndpoint),
+		zap.Bool("tracing_enabled", cfg.IsTracingEnabled()),
+		zap.Bool("database_enabled", cfg.Clients.Database.Enabled),
+		zap.Bool("redis_enabled", cfg.Clients.Redis.Enabled),
 		zap.Bool("metrics_enabled", cfg.Observability.MetricsEnabled),
 		zap.Bool("cors_enabled", cfg.Middleware.CORSEnabled),
 		zap.Bool("rate_limit_enabled", cfg.Middleware.RateLimitEnabled),

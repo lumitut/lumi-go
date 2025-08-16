@@ -20,11 +20,8 @@ type Config struct {
 	// Server configuration
 	Server ServerConfig `json:"server" mapstructure:"server"`
 
-	// Database configuration
-	Database DatabaseConfig `json:"database" mapstructure:"database"`
-
-	// Redis configuration
-	Redis RedisConfig `json:"redis" mapstructure:"redis"`
+	// External clients configuration (optional)
+	Clients ClientsConfig `json:"clients" mapstructure:"clients"`
 
 	// Observability configuration
 	Observability ObservabilityConfig `json:"observability" mapstructure:"observability"`
@@ -63,34 +60,34 @@ type ServerConfig struct {
 	PProfPort               string        `json:"pprofPort" mapstructure:"pprofPort"`
 }
 
-// DatabaseConfig holds database configuration
-type DatabaseConfig struct {
-	Host            string        `json:"host" mapstructure:"host"`
-	Port            string        `json:"port" mapstructure:"port"`
-	User            string        `json:"user" mapstructure:"user"`
-	Password        string        `json:"password" mapstructure:"password"`
-	Database        string        `json:"database" mapstructure:"database"`
-	SSLMode         string        `json:"sslMode" mapstructure:"sslMode"`
-	MaxOpenConns    int           `json:"maxOpenConns" mapstructure:"maxOpenConns"`
-	MaxIdleConns    int           `json:"maxIdleConns" mapstructure:"maxIdleConns"`
-	ConnMaxLifetime time.Duration `json:"connMaxLifetime" mapstructure:"connMaxLifetime"`
-	ConnMaxIdleTime time.Duration `json:"connMaxIdleTime" mapstructure:"connMaxIdleTime"`
+// ClientsConfig holds optional external client configurations
+type ClientsConfig struct {
+	// Database client configuration (simplified)
+	Database DatabaseClientConfig `json:"database" mapstructure:"database"`
+
+	// Redis client configuration (simplified)
+	Redis RedisClientConfig `json:"redis" mapstructure:"redis"`
+
+	// Tracing client configuration (simplified)
+	Tracing TracingClientConfig `json:"tracing" mapstructure:"tracing"`
 }
 
-// RedisConfig holds Redis configuration
-type RedisConfig struct {
-	Host         string        `json:"host" mapstructure:"host"`
-	Port         string        `json:"port" mapstructure:"port"`
-	Password     string        `json:"password" mapstructure:"password"`
-	DB           int           `json:"db" mapstructure:"db"`
-	PoolSize     int           `json:"poolSize" mapstructure:"poolSize"`
-	MinIdleConns int           `json:"minIdleConns" mapstructure:"minIdleConns"`
-	DialTimeout  time.Duration `json:"dialTimeout" mapstructure:"dialTimeout"`
-	ReadTimeout  time.Duration `json:"readTimeout" mapstructure:"readTimeout"`
-	WriteTimeout time.Duration `json:"writeTimeout" mapstructure:"writeTimeout"`
-	PoolTimeout  time.Duration `json:"poolTimeout" mapstructure:"poolTimeout"`
-	IdleTimeout  time.Duration `json:"idleTimeout" mapstructure:"idleTimeout"`
-	MaxRetries   int           `json:"maxRetries" mapstructure:"maxRetries"`
+// DatabaseClientConfig holds simplified database client configuration
+type DatabaseClientConfig struct {
+	Enabled bool   `json:"enabled" mapstructure:"enabled"`
+	URL     string `json:"url" mapstructure:"url"` // Connection string
+}
+
+// RedisClientConfig holds simplified Redis client configuration
+type RedisClientConfig struct {
+	Enabled bool   `json:"enabled" mapstructure:"enabled"`
+	URL     string `json:"url" mapstructure:"url"` // Connection string
+}
+
+// TracingClientConfig holds simplified tracing client configuration
+type TracingClientConfig struct {
+	Enabled  bool   `json:"enabled" mapstructure:"enabled"`
+	Endpoint string `json:"endpoint" mapstructure:"endpoint"` // OTLP endpoint
 }
 
 // ObservabilityConfig holds observability configuration
@@ -102,17 +99,10 @@ type ObservabilityConfig struct {
 	LogSampling    bool   `json:"logSampling" mapstructure:"logSampling"`
 	LogDevelopment bool   `json:"logDevelopment" mapstructure:"logDevelopment"`
 
-	// Metrics
+	// Metrics (service's own metrics)
 	MetricsEnabled bool   `json:"metricsEnabled" mapstructure:"metricsEnabled"`
 	MetricsPort    string `json:"metricsPort" mapstructure:"metricsPort"`
 	MetricsPath    string `json:"metricsPath" mapstructure:"metricsPath"`
-
-	// Tracing
-	TracingEnabled  bool              `json:"tracingEnabled" mapstructure:"tracingEnabled"`
-	TracingSampling float64           `json:"tracingSampling" mapstructure:"tracingSampling"`
-	TracingEndpoint string            `json:"tracingEndpoint" mapstructure:"tracingEndpoint"`
-	TracingInsecure bool              `json:"tracingInsecure" mapstructure:"tracingInsecure"`
-	TracingHeaders  map[string]string `json:"tracingHeaders" mapstructure:"tracingHeaders"`
 }
 
 // MiddlewareConfig holds middleware configuration
@@ -265,18 +255,36 @@ func (c *Config) LogConfig(ctx context.Context) {
 		zap.String("log_level", c.Service.LogLevel),
 		zap.String("http_port", c.Server.HTTPPort),
 		zap.String("rpc_port", c.Server.RPCPort),
-		zap.String("db_host", c.Database.Host),
-		zap.String("db_port", c.Database.Port),
-		zap.String("db_name", c.Database.Database),
-		zap.String("redis_host", c.Redis.Host),
-		zap.String("redis_port", c.Redis.Port),
+		zap.Bool("database_enabled", c.Clients.Database.Enabled),
+		zap.Bool("redis_enabled", c.Clients.Redis.Enabled),
+		zap.Bool("tracing_enabled", c.Clients.Tracing.Enabled),
 		zap.Bool("metrics_enabled", c.Observability.MetricsEnabled),
-		zap.Bool("tracing_enabled", c.Observability.TracingEnabled),
 		zap.Bool("cors_enabled", c.Middleware.CORSEnabled),
 		zap.Bool("rate_limit_enabled", c.Middleware.RateLimitEnabled),
 		zap.Int("rate_limit_rate", c.Middleware.RateLimitRate),
 		zap.Bool("maintenance_mode", c.Features.MaintenanceMode),
 	)
+}
+
+// GetDatabaseURL returns the database connection URL if database is enabled
+func (c *Config) GetDatabaseURL() (string, bool) {
+	if c.Clients.Database.Enabled && c.Clients.Database.URL != "" {
+		return c.Clients.Database.URL, true
+	}
+	return "", false
+}
+
+// GetRedisURL returns the Redis connection URL if Redis is enabled
+func (c *Config) GetRedisURL() (string, bool) {
+	if c.Clients.Redis.Enabled && c.Clients.Redis.URL != "" {
+		return c.Clients.Redis.URL, true
+	}
+	return "", false
+}
+
+// IsTracingEnabled returns whether tracing is enabled
+func (c *Config) IsTracingEnabled() bool {
+	return c.Clients.Tracing.Enabled && c.Clients.Tracing.Endpoint != ""
 }
 
 // Helper functions

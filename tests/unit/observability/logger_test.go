@@ -118,9 +118,14 @@ func TestLoggerLevels(t *testing.T) {
 	writer := zapcore.AddSync(&buf)
 	core := zapcore.NewCore(encoder, writer, zapcore.DebugLevel)
 
-	// Initialize logger with custom core
-	customLogger := zap.New(core)
-	logger.SetGlobal(customLogger)
+	// Initialize logger with test config
+	testConfig := logger.Config{
+		Level:       "debug",
+		Format:      "json",
+		Development: false,
+	}
+	err := logger.Initialize(testConfig)
+	require.NoError(t, err)
 
 	ctx := context.Background()
 
